@@ -369,7 +369,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
 
             return Column(
               children: [
-                _buildSectionHeader(items.length),
+                //_buildSectionHeader(items.length),
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(
