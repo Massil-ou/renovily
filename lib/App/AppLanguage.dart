@@ -34,7 +34,7 @@ class WinyCar {
   // COMMON / AUTH UI
   // =========================
 
-  String get appName => _t('Winycar', 'Winycar', 'ويني كار');
+  String get appName => _t('Renovily', 'Renovily', 'رينوفيلي');
   String get ok => _t('OK', 'OK', 'حسناً');
   String get yes => _t('Oui', 'Yes', 'نعم');
   String get no => _t('Non', 'No', 'لا');
@@ -527,9 +527,9 @@ class WinyCar {
   );
 
   String get termsIntro => _t(
-    'Les présentes Conditions d’utilisation encadrent l’accès et l’utilisation de la plateforme WinyCar, une application de mise en relation entre clients recherchant des prestations dans le secteur du BTP et professionnels proposant leurs services.',
-    'These Terms of Use govern access to and use of the WinyCar platform, an application connecting clients seeking construction and building services with professionals offering their services.',
-    'تنظم شروط الاستخدام هذه الوصول إلى منصة WinyCar واستخدامها، وهي تطبيق يربط بين العملاء الباحثين عن خدمات في قطاع البناء والأشغال وبين المهنيين الذين يقدمون هذه الخدمات.',
+    'Les présentes Conditions d’utilisation encadrent l’accès et l’utilisation de la plateforme Renovily, une application de mise en relation entre clients recherchant des prestations dans le secteur du BTP et professionnels proposant leurs services.',
+    'These Terms of Use govern access to and use of the Renovily platform, an application connecting clients seeking construction and building services with professionals offering their services.',
+    'تنظم شروط الاستخدام هذه الوصول إلى منصة Renovily واستخدامها، وهي تطبيق يربط بين العملاء الباحثين عن خدمات في قطاع البناء والأشغال وبين المهنيين الذين يقدمون هذه الخدمات.',
   );
 
   String get termsS1Title => _t(

@@ -423,7 +423,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
           padding: const EdgeInsets.symmetric(horizontal: kGutter, vertical: 8),
           child: Row(
             children: [
-              const GlassTitlePill(text: 'Darek'),
+              const GlassTitlePill(text: 'renovily'),
               const Spacer(),
               GlassCircleLanguageButton(
                 manager: widget.manager,

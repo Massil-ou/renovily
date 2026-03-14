@@ -42,7 +42,7 @@ class _TermsViewState extends State<TermsView> {
           },
           child: AuthScaffold(
             manager: widget.manager,
-            title: 'Winycar',
+            title: 'Renovily',
             padding: EdgeInsets.fromLTRB(sidePad, topGap, sidePad, 24),
             child: Directionality(
               textDirection: widget.manager.languageService.textDirection,

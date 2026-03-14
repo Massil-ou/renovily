@@ -283,7 +283,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   const Text(
-                                    'WinyCar',
+                                    'Renovily',
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.w800,
@@ -528,7 +528,7 @@ class _GlassTitlePill extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'WinyCar',
+                'Renovily',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

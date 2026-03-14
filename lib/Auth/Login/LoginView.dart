@@ -237,7 +237,7 @@ class _LoginViewState extends State<LoginView> {
 
             return AuthScaffold(
               manager: widget.manager,
-              title: 'Winycar',
+              title: 'Renovily',
               padding: EdgeInsets.fromLTRB(6, topGap, 6, 24),
               child: Align(
                 alignment: Alignment.topCenter,

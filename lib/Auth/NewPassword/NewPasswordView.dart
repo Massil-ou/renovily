@@ -160,7 +160,7 @@ class _NewPasswordViewState extends State<NewPasswordView> {
 
             return AuthScaffold(
               manager: widget.manager,
-              title: 'Winycar',
+              title: 'Renovily',
               padding: EdgeInsets.fromLTRB(6, topGap, 6, 24),
               child: content,
             );

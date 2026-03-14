@@ -47,7 +47,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           },
           child: AuthScaffold(
             manager: widget.manager,
-            title: 'WinyCar',
+            title: 'Renovily',
             padding: EdgeInsets.fromLTRB(sidePad, topGap, sidePad, 24),
             child: Directionality(
               textDirection: widget.manager.languageService.textDirection,

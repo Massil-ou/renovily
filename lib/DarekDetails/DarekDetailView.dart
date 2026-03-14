@@ -220,7 +220,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 
   Future<void> _showGlassDialog({
     required String message,
-    String title = 'Darek',
+    String title = 'renovily',
     IconData icon = Icons.info_outline,
     Color iconBg = const Color(0xFFEAF3FF),
     Color iconColor = Colors.blueAccent,
@@ -535,7 +535,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
         onPressed: _handleBack,
       ),
       title: const Text(
-        'Darek',
+        'renovily',
         style: TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.w700,
@@ -1469,7 +1469,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _GlassInfoDialog(
-                      title: 'Darek',
+                      title: 'renovily',
                       message: _inlineError ?? 'Annonce introuvable',
                       okText: 'OK',
                       icon: Icons.error_outline,
