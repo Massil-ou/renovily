@@ -1,0 +1,179 @@
+import 'package:flutter/foundation.dart' show ValueNotifier, debugPrint;
+
+import '../App/HelperService.dart';
+import '../App/Manager.dart';
+import 'DarekModel.dart';
+import 'DarekService.dart';
+
+class DarekManager {
+  final DarekService _service;
+
+  DarekManager(Manager manager, HelperService helper)
+      : _service = DarekService(manager, helper);
+
+  /// Toutes les annonces BTP
+  final ValueNotifier<List<DarekModel>> annonces =
+  ValueNotifier<List<DarekModel>>([]);
+
+  /// Résultat filtré / recherche
+  final ValueNotifier<List<DarekModel>> searchAnnonces =
+  ValueNotifier<List<DarekModel>>([]);
+
+  /// Est-ce qu'une recherche est active
+  final ValueNotifier<bool> isSearchActive = ValueNotifier<bool>(false);
+
+  /// Chargement global
+  final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+
+  /// Dernière erreur
+  final ValueNotifier<String?> lastError = ValueNotifier<String?>(null);
+
+  /// Version de refresh UI
+  final ValueNotifier<int> dataChangeVersion = ValueNotifier<int>(0);
+
+  /// Derniers filtres
+  final ValueNotifier<String> selectedQ = ValueNotifier<String>('');
+  final ValueNotifier<List<String>> selectedWilayas =
+  ValueNotifier<List<String>>([]);
+  final ValueNotifier<List<String>> selectedCommunes =
+  ValueNotifier<List<String>>([]);
+  final ValueNotifier<List<String>> selectedMetiers =
+  ValueNotifier<List<String>>([]);
+  final ValueNotifier<double?> selectedPrixMin = ValueNotifier<double?>(null);
+  final ValueNotifier<double?> selectedPrixMax = ValueNotifier<double?>(null);
+  final ValueNotifier<bool?> selectedIsPro = ValueNotifier<bool?>(null);
+
+  void clearLastError() {
+    lastError.value = null;
+  }
+
+  Future<void> init() async {
+    await refreshInitialFromNetwork();
+  }
+
+  Future<void> refreshInitialFromNetwork() async {
+    try {
+      isLoading.value = true;
+      clearLastError();
+
+      final fresh = await _service.fetchAnnonces();
+
+      annonces.value = List<DarekModel>.unmodifiable(fresh);
+      isSearchActive.value = false;
+      searchAnnonces.value = const [];
+
+      selectedQ.value = '';
+      selectedWilayas.value = [];
+      selectedCommunes.value = [];
+      selectedMetiers.value = [];
+      selectedPrixMin.value = null;
+      selectedPrixMax.value = null;
+      selectedIsPro.value = null;
+
+      _bump();
+    } catch (e, st) {
+      debugPrint('DarekManager.refreshInitialFromNetwork: $e\n$st');
+      lastError.value = e.toString();
+      _bump();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> applyFilters({
+    String? q,
+    List<String>? wilayas,
+    List<String>? communes,
+    List<String>? metiers,
+    double? prixMin,
+    double? prixMax,
+    bool? isPro,
+  }) async {
+    try {
+      isLoading.value = true;
+      clearLastError();
+
+      final selectedQuery = (q ?? '').trim();
+      final selectedW = List<String>.from(wilayas ?? const []);
+      final selectedC = List<String>.from(communes ?? const []);
+      final selectedM = List<String>.from(metiers ?? const []);
+
+      selectedQ.value = selectedQuery;
+      selectedWilayas.value = selectedW;
+      selectedCommunes.value = selectedC;
+      selectedMetiers.value = selectedM;
+      selectedPrixMin.value = prixMin;
+      selectedPrixMax.value = prixMax;
+      selectedIsPro.value = isPro;
+
+      final results = await _service.searchAnnonces(
+        q: selectedQuery,
+        wilayas: selectedW,
+        communes: selectedC,
+        metiers: selectedM,
+        prixMin: prixMin,
+        prixMax: prixMax,
+        isPro: isPro,
+      );
+
+      searchAnnonces.value = List<DarekModel>.unmodifiable(results);
+
+      final hasActiveFilter = selectedQuery.isNotEmpty ||
+          selectedW.isNotEmpty ||
+          selectedC.isNotEmpty ||
+          selectedM.isNotEmpty ||
+          prixMin != null ||
+          prixMax != null ||
+          isPro != null;
+
+      isSearchActive.value = hasActiveFilter;
+
+      if (!hasActiveFilter) {
+        searchAnnonces.value = const [];
+      }
+
+      _bump();
+    } catch (e, st) {
+      debugPrint('DarekManager.applyFilters: $e\n$st');
+      lastError.value = e.toString();
+      isSearchActive.value = false;
+      searchAnnonces.value = const [];
+      _bump();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void clearFilters() {
+    selectedQ.value = '';
+    selectedWilayas.value = [];
+    selectedCommunes.value = [];
+    selectedMetiers.value = [];
+    selectedPrixMin.value = null;
+    selectedPrixMax.value = null;
+    selectedIsPro.value = null;
+
+    isSearchActive.value = false;
+    searchAnnonces.value = const [];
+    lastError.value = null;
+
+    _bump();
+  }
+
+  ValueNotifier<List<DarekModel>> get currentList =>
+      isSearchActive.value ? searchAnnonces : annonces;
+
+  List<DarekModel> displayedList() {
+    return isSearchActive.value ? searchAnnonces.value : annonces.value;
+  }
+
+  DarekModel? displayedItemAt(int index) {
+    final list = displayedList();
+    if (index < 0 || index >= list.length) return null;
+    return list[index];
+  }
+
+  void _bump() {
+    dataChangeVersion.value = dataChangeVersion.value + 1;
+  }
+}

@@ -1,0 +1,25 @@
+[build]
+command = """
+flutter clean && \
+flutter pub get && \
+flutter build web --release --pwa-strategy=none && \
+chmod +x modify_manifest.sh && \
+chmod +x modify_index.sh && \
+chmod +x create_htaccess.sh && \
+chmod +x create_redirects.sh && \
+./modify_manifest.sh && \
+./modify_index.sh && \
+./create_htaccess.sh && \
+./create_redirects.sh
+"""
+publish = "build/web"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+[[headers]]
+for = "/index.html"
+[headers.values]
+Cache-Control = "no-cache, no-store, must-revalidate"
