@@ -9,12 +9,13 @@ import '../Auth/Shared/AuthModels.dart';
 import '../Auth/Signin/RegisterManager.dart';
 import '../Darek/DarekManager.dart';
 import '../DarekDetails/DarekDetailManager.dart';
+import '../Dashboard/FavorisOffers/FavorisDarekManager.dart';
+import '../Dashboard/Reviews/OfferReviewsManager.dart';
 import '../LoginAuto/AutoLoginManager.dart';
 import '../Logout/LogoutManager.dart';
 import '../Dashboard/AddDarek/AddDarekManager.dart';
 import 'AppLanguage.dart';
 import 'BaseResponse.dart';
-import '../Dashboard/FavorisDarek/FavorisDarekManager.dart';
 import '../Notification/FcmService.dart';
 import 'GlobalSingleton.dart';
 import 'HelperService.dart';
@@ -77,9 +78,9 @@ class Manager {
   AddAvisDarekManager get addAvisDarekManager =>
       _addAvisDarekManager ??= AddAvisDarekManager(this, helperService);
 
-  FavorisAnnoncesManager? _favorisAnnoncesManager;
-  FavorisAnnoncesManager get favorisAnnoncesManager =>
-      _favorisAnnoncesManager ??= FavorisAnnoncesManager(this, helperService);
+  FavorisOffersManager? _favorisAnnoncesManager;
+  FavorisOffersManager get favorisAnnoncesManager =>
+      _favorisAnnoncesManager ??= FavorisOffersManager(this, helperService);
 
   MesAnnoncesManager? _mesAnnoncesManager;
   MesAnnoncesManager get mesAnnoncesManager =>
@@ -88,9 +89,9 @@ class Manager {
   DzLookupService? _dzLookupService;
   DzLookupService get dzLookupService => _dzLookupService ??= DzLookupService();
 
-  AddDarekManager? _addDarekManager;
-  AddDarekManager get addDarekManager =>
-      _addDarekManager ??= AddDarekManager(this, helperService);
+  AddOfferManager? _addOffersManager;
+  AddOfferManager get addOfferManager =>
+      _addOffersManager ??= AddOfferManager(this, helperService);
 
   PartnerProfileManager? _partnerProfileManager;
   PartnerProfileManager get partnerProfileManager =>
@@ -122,6 +123,10 @@ class Manager {
   LogoutManager? _logoutManager;
   LogoutManager get logoutManager =>
       _logoutManager ??= LogoutManager(this, helperService);
+
+  OfferReviewsManager? _offerReviewsManager;
+  OfferReviewsManager get offerReviewsManager =>
+      _offerReviewsManager ??= OfferReviewsManager(this, helperService);
 
   AutoLoginManager? _autoLoginManager;
   AutoLoginManager get autoLoginManager =>

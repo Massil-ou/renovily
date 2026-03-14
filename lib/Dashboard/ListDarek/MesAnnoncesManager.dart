@@ -16,7 +16,7 @@ class MesAnnoncesManager extends ChangeNotifier {
   bool isSaving = false;
   String? lastError;
 
-  List<DarekModel> annonces = [];
+  List<OfferModel> annonces = [];
 
   Future<void> load() async {
     if (isLoading) return;
@@ -26,10 +26,17 @@ class MesAnnoncesManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      annonces = await _service.getMesAnnonces();
+      final res = await _service.getMesAnnonces();
+
+      if (res.success) {
+        annonces = res.data ?? <OfferModel>[];
+      } else {
+        lastError = res.message.isNotEmpty ? res.message : 'load_failed';
+        annonces = <OfferModel>[];
+      }
     } catch (_) {
       lastError = 'exception';
-      annonces = [];
+      annonces = <OfferModel>[];
     } finally {
       isLoading = false;
       notifyListeners();
@@ -40,7 +47,7 @@ class MesAnnoncesManager extends ChangeNotifier {
     await load();
   }
 
-  Future<bool> update(DarekModel item) async {
+  Future<bool> update(OfferModel item) async {
     if (isSaving) return false;
 
     isSaving = true;
@@ -48,7 +55,14 @@ class MesAnnoncesManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final updated = await _service.updateAnnonce(item);
+      final res = await _service.updateAnnonce(item);
+
+      if (!res.success) {
+        lastError = res.message.isNotEmpty ? res.message : 'update_failed';
+        return false;
+      }
+
+      final updated = res.data;
       if (updated == null) {
         lastError = 'update_failed';
         return false;
@@ -77,9 +91,10 @@ class MesAnnoncesManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final ok = await _service.deleteAnnonce(annonceId);
-      if (!ok) {
-        lastError = 'delete_failed';
+      final res = await _service.deleteAnnonce(annonceId);
+
+      if (!res.success) {
+        lastError = res.message.isNotEmpty ? res.message : 'delete_failed';
         return false;
       }
 
@@ -92,6 +107,13 @@ class MesAnnoncesManager extends ChangeNotifier {
       isSaving = false;
       notifyListeners();
     }
+  }
+
+  OfferModel? findById(String annonceId) {
+    for (final item in annonces) {
+      if (item.id == annonceId) return item;
+    }
+    return null;
   }
 
   void clearError() {

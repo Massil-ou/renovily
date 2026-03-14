@@ -106,14 +106,14 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
     return result == true;
   }
 
-  String _price(DarekModel a) {
-    if (a.prix == null) return 'Prix à négocier';
-    final unit = (a.unitePrix ?? '').trim();
-    if (unit.isEmpty) return "${a.prix!.toStringAsFixed(0)} DA";
-    return "${a.prix!.toStringAsFixed(0)} DA / $unit";
+  String _price(OfferModel a) {
+    if (a.prix == null || a.prix! <= 0) return 'Prix à négocier';
+    final unit = a.unitePrix?.label ?? '';
+    if (unit.isEmpty) return '${a.prix} DA';
+    return '${a.prix} DA / $unit';
   }
 
-  String _subtitle(DarekModel a) {
+  String _subtitle(OfferModel a) {
     final parts = <String>[
       if (a.metier.trim().isNotEmpty) a.metier.trim(),
       if (a.wilaya.trim().isNotEmpty) a.wilaya.trim(),
@@ -122,14 +122,14 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
     return parts.isEmpty ? '-' : parts.join(' • ');
   }
 
-  Future<void> _deleteAnnonce(DarekModel item) async {
+  Future<void> _deleteAnnonce(OfferModel item) async {
     final confirm = await _showDeleteConfirmDialog();
     if (!confirm) return;
 
     await m.delete(item.id);
   }
 
-  void _openDetails(DarekModel item) {
+  void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DarekDetailView(
@@ -140,8 +140,8 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
     );
   }
 
-  Future<void> _openEditDialog(DarekModel item) async {
-    final updated = await showDialog<DarekModel>(
+  Future<void> _openEditDialog(OfferModel item) async {
+    final updated = await showDialog<OfferModel>(
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
@@ -233,7 +233,7 @@ class AnnonceCardItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final String price;
-  final String status;
+  final OfferStatus status;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -250,40 +250,21 @@ class AnnonceCardItem extends StatelessWidget {
     this.onDelete,
   });
 
-  String _statusLabel(String value) {
-    switch (value.trim().toLowerCase()) {
-      case 'active':
-        return 'Active';
-      case 'pending':
-        return 'En attente';
-      case 'rejected':
-        return 'Refusée';
-      case 'archived':
-        return 'Archivée';
-      default:
-        return value.trim().isEmpty ? '-' : value;
-    }
-  }
-
-  Color _statusColor(String value) {
-    switch (value.trim().toLowerCase()) {
-      case 'active':
-        return Colors.greenAccent;
-      case 'pending':
+  Color _statusColor(OfferStatus value) {
+    switch (value) {
+      case OfferStatus.pending:
         return Colors.orangeAccent;
-      case 'rejected':
+      case OfferStatus.deleted:
         return Colors.redAccent;
-      case 'archived':
-        return Colors.blueGrey;
-      default:
-        return Colors.white70;
+      case OfferStatus.visible:
+        return Colors.greenAccent;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final statusColor = _statusColor(status);
-    final statusLabel = _statusLabel(status);
+    final statusLabel = status.label;
 
     return Material(
       color: Colors.transparent,
@@ -448,7 +429,7 @@ class _AnnonceImage extends StatelessWidget {
 }
 
 class _EditAnnonceDialog extends StatefulWidget {
-  final DarekModel item;
+  final OfferModel item;
 
   const _EditAnnonceDialog({required this.item});
 
@@ -463,7 +444,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
   late final TextEditingController _communeCtrl;
   late final TextEditingController _metierCtrl;
   late final TextEditingController _prixCtrl;
-  late final TextEditingController _uniteCtrl;
+  late OfferPriceUnit? _selectedUnit;
 
   @override
   void initState() {
@@ -474,9 +455,9 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
     _communeCtrl = TextEditingController(text: widget.item.commune);
     _metierCtrl = TextEditingController(text: widget.item.metier);
     _prixCtrl = TextEditingController(
-      text: widget.item.prix?.toStringAsFixed(0) ?? '',
+      text: widget.item.prix?.toString() ?? '',
     );
-    _uniteCtrl = TextEditingController(text: widget.item.unitePrix ?? '');
+    _selectedUnit = widget.item.unitePrix;
   }
 
   @override
@@ -487,12 +468,11 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
     _communeCtrl.dispose();
     _metierCtrl.dispose();
     _prixCtrl.dispose();
-    _uniteCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
-    final updated = DarekModel(
+    final updated = OfferModel(
       id: widget.item.id,
       titre: _titreCtrl.text.trim(),
       description: _descriptionCtrl.text.trim(),
@@ -503,8 +483,8 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
       namePro: widget.item.namePro,
       status: widget.item.status,
       experienceAnnees: widget.item.experienceAnnees,
-      prix: double.tryParse(_prixCtrl.text.trim()),
-      unitePrix: _uniteCtrl.text.trim().isEmpty ? null : _uniteCtrl.text.trim(),
+      prix: int.tryParse(_prixCtrl.text.trim()),
+      unitePrix: _selectedUnit,
       images: widget.item.images,
       createdAt: widget.item.createdAt,
       avis: widget.item.avis,
@@ -640,9 +620,26 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: TextField(
-                          controller: _uniteCtrl,
+                        child: DropdownButtonFormField<OfferPriceUnit?>(
+                          value: _selectedUnit,
                           decoration: _decoration('Unité'),
+                          items: [
+                            const DropdownMenuItem<OfferPriceUnit?>(
+                              value: null,
+                              child: Text('Aucune unité'),
+                            ),
+                            ...OfferPriceUnit.values.map(
+                                  (unit) => DropdownMenuItem<OfferPriceUnit?>(
+                                value: unit,
+                                child: Text(unit.label),
+                              ),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedUnit = value;
+                            });
+                          },
                         ),
                       ),
                     ],

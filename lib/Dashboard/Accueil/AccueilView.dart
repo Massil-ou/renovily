@@ -127,7 +127,7 @@ class _AccueilViewState extends State<AccueilView> {
     setState(() {});
   }
 
-  void _openDetails(DarekModel item) {
+  void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DarekDetailView(
@@ -285,7 +285,7 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   Widget _buildList() {
-    return ValueListenableBuilder<List<DarekModel>>(
+    return ValueListenableBuilder<List<OfferModel>>(
       valueListenable: widget.manager.homeManager.currentList,
       builder: (_, items, __) {
         return LayoutBuilder(

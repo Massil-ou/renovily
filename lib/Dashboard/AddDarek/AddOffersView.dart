@@ -3,26 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../App/Manager.dart';
+import '../../Darek/DarekModel.dart';
 import 'AddDarekManager.dart';
 
-class AddDarekView extends StatefulWidget {
+class AddOffersView extends StatefulWidget {
   final Manager manager;
 
-  const AddDarekView({
+  const AddOffersView({
     super.key,
     required this.manager,
   });
 
   @override
-  State<AddDarekView> createState() => _AddDarekViewContentState();
+  State<AddOffersView> createState() => _AddOffersViewState();
 }
 
-class _AddDarekViewContentState extends State<AddDarekView>
+class _AddOffersViewState extends State<AddOffersView>
     with WidgetsBindingObserver {
   final _scrollCtrl = ScrollController();
   final _formKey = GlobalKey<FormState>();
 
-  late final AddDarekManager m = widget.manager.addDarekManager;
+  late final AddOfferManager m = widget.manager.addOfferManager;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -40,7 +41,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
 
     if (m.lastError != null) {
       final err = m.lastError!;
-      m.lastError = null;
+      m.clearError();
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -54,20 +55,21 @@ class _AddDarekViewContentState extends State<AddDarekView>
       });
     }
 
-    if (m.success) {
-      m.success = false;
+    if (m.lastCreatedOffer != null) {
+      final created = m.lastCreatedOffer!;
+      m.clearCreatedOffer();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
         await _showGlassDialog(
-          title: 'Annonce publiée',
-          message: 'Votre annonce a bien été publiée.',
+          title: 'Offre publiée',
+          message: 'Votre offre a bien été publiée.',
           icon: Icons.check_circle_outline,
           iconBg: const Color(0xFFE8F7EC),
           iconColor: Colors.green,
         );
         if (!mounted) return;
-        m.clear();
+        m.clearForm();
       });
     }
   }
@@ -76,8 +78,10 @@ class _AddDarekViewContentState extends State<AddDarekView>
     switch (code) {
       case 'network_error':
         return 'Impossible de communiquer avec le serveur.';
-      case 'publish_failed':
-        return 'Impossible de publier cette annonce.';
+      case 'add_offer_failed':
+        return 'Impossible de publier cette offre.';
+      case 'exception':
+        return 'Une erreur inattendue est survenue.';
       default:
         return code;
     }
@@ -131,8 +135,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
     if (images.isEmpty) return;
 
     for (final x in images.take(m.remainingPhotos)) {
-      final bytes = await x.readAsBytes();
-      m.addImage(x, bytes);
+      await m.addImageFromXFile(x);
     }
   }
 
@@ -145,9 +148,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
     );
 
     if (x == null) return;
-
-    final bytes = await x.readAsBytes();
-    m.addImage(x, bytes);
+    await m.addImageFromXFile(x);
   }
 
   Future<void> _choosePhotoSource() async {
@@ -162,7 +163,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text("Galerie"),
+                title: const Text('Galerie'),
                 onTap: () async {
                   Navigator.pop(context);
                   await _pickFromGallery();
@@ -170,7 +171,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text("Caméra"),
+                title: const Text('Caméra'),
                 onTap: () async {
                   Navigator.pop(context);
                   await _takePhoto();
@@ -228,7 +229,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Limite d’annonces',
+                  'Limite d’offres',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -237,7 +238,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Votre compte client peut publier jusqu’à 5 annonces. Devenez pro dans le menu.',
+                  'Votre compte client peut publier jusqu’à 20 offres. Passez pro pour augmenter cette limite.',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.86),
                     fontSize: 13.5,
@@ -303,7 +304,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  "Photos",
+                  'Photos',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -318,7 +319,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
             runSpacing: 10,
             children: [
               for (int i = 0; i < m.photoBytes.length; i++) _photoTile(i),
-              if (m.photoBytes.length < AddDarekManager.maxPhotos)
+              if (m.photoBytes.length < AddOfferManager.maxPhotos)
                 InkWell(
                   onTap: _choosePhotoSource,
                   child: Container(
@@ -384,6 +385,42 @@ class _AddDarekViewContentState extends State<AddDarekView>
     );
   }
 
+  Widget _buildUnitDropdown() {
+    return DropdownButtonFormField<OfferPriceUnit>(
+      value: m.selectedUnit,
+      dropdownColor: const Color(0xFF1E1E1E),
+      style: const TextStyle(color: Colors.white),
+      iconEnabledColor: Colors.white,
+      decoration: InputDecoration(
+        labelText: 'Unité de prix',
+        labelStyle: const TextStyle(
+          color: Colors.white70,
+          fontSize: 13,
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.white.withOpacity(.4),
+          ),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.white,
+            width: 1.4,
+          ),
+        ),
+      ),
+      items: OfferPriceUnit.values
+          .map(
+            (e) => DropdownMenuItem<OfferPriceUnit>(
+          value: e,
+          child: Text(e.label),
+        ),
+      )
+          .toList(),
+      onChanged: m.setUnit,
+    );
+  }
+
   Widget _buildForm() {
     return _glassContainer(
       child: Form(
@@ -392,7 +429,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
           children: [
             _field(
               m.titreCtrl,
-              "Titre",
+              'Titre',
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Titre obligatoire';
                 return null;
@@ -401,7 +438,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
             const SizedBox(height: 12),
             _field(
               m.metierCtrl,
-              "Métier",
+              'Métier',
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Métier obligatoire';
                 return null;
@@ -410,7 +447,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
             const SizedBox(height: 12),
             _field(
               m.wilayaCtrl,
-              "Wilaya",
+              'Wilaya',
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Wilaya obligatoire';
                 return null;
@@ -419,7 +456,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
             const SizedBox(height: 12),
             _field(
               m.communeCtrl,
-              "Commune",
+              'Commune',
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Commune obligatoire';
                 return null;
@@ -428,24 +465,39 @@ class _AddDarekViewContentState extends State<AddDarekView>
             const SizedBox(height: 12),
             _field(
               m.experienceCtrl,
-              "Années d’expérience",
+              'Années d’expérience',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
             _field(
               m.prixCtrl,
-              "Prix",
+              'Prix',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
+            _buildUnitDropdown(),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Compte pro',
+                style: TextStyle(color: Colors.white),
+              ),
+              value: m.isPro,
+              activeColor: Colors.white,
+              inactiveThumbColor: Colors.white70,
+              inactiveTrackColor: Colors.white24,
+              onChanged: m.setIsPro,
+            ),
+            const SizedBox(height: 12),
             _field(
-              m.uniteCtrl,
-              "Unité de prix",
+              m.nameProCtrl,
+              'Nom pro',
             ),
             const SizedBox(height: 12),
             _field(
               m.descCtrl,
-              "Description",
+              'Description',
               maxLines: 5,
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Description obligatoire';
@@ -460,7 +512,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await m.publish(widget.manager);
+    await m.publish();
   }
 
   Widget _buildActions() {
@@ -473,8 +525,8 @@ class _AddDarekViewContentState extends State<AddDarekView>
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        onPressed: m.loading ? null : _submit,
-        child: m.loading
+        onPressed: m.isSaving ? null : _submit,
+        child: m.isSaving
             ? const SizedBox(
           width: 22,
           height: 22,
@@ -484,7 +536,7 @@ class _AddDarekViewContentState extends State<AddDarekView>
           ),
         )
             : const Text(
-          "Publier",
+          'Publier',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: Colors.black,

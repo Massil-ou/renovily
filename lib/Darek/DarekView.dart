@@ -167,7 +167,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
     setState(() {});
   }
 
-  void _openDetails(DarekModel item) {
+  void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DarekDetailView(
@@ -322,7 +322,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
   }
 
   Widget _buildList() {
-    return ValueListenableBuilder<List<DarekModel>>(
+    return ValueListenableBuilder<List<OfferModel>>(
       valueListenable: widget.manager.homeManager.currentList,
       builder: (_, items, __) {
         return LayoutBuilder(

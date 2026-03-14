@@ -165,18 +165,18 @@ class DarekService {
   }
 
   /// Charger toutes les annonces
-  Future<List<DarekModel>> fetchAnnonces() async {
+  Future<List<OfferModel>> fetchAnnonces() async {
     await Future.delayed(const Duration(milliseconds: 600));
 
     final raw = _mockJson();
 
     return raw
-        .map((e) => DarekModel.fromJson(e))
+        .map((e) => OfferModel.fromJson(e))
         .toList(growable: false);
   }
 
   /// Recherche mock avec filtres complets
-  Future<List<DarekModel>> searchAnnonces({
+  Future<List<OfferModel>> searchAnnonces({
     String q = '',
     required List<String> wilayas,
     required List<String> communes,
@@ -188,7 +188,7 @@ class DarekService {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final all = _mockJson()
-        .map((e) => DarekModel.fromJson(e))
+        .map((e) => OfferModel.fromJson(e))
         .toList(growable: false);
 
     final query = q.trim().toLowerCase();

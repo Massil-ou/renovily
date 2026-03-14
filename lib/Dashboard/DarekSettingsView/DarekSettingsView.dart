@@ -1,9 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-import '../AddDarek/AddDarekView.dart';
-import '../../App/AppLanguage.dart';
-import '../FavorisDarek/FavorisDarekView.dart';
+import '../AddDarek/AddOffersView.dart';
+import '../FavorisOffers/FavorisDarekView.dart';
 import '../LanguageService.dart';
 import '../ListDarek/ListDarekView.dart';
 import '../../App/Manager.dart';
@@ -84,8 +83,8 @@ class _AnnonceSettingViewState extends State<AnnonceSettingView> {
                         index: _index,
                         children: [
                           MesAnnoncesPage(manager: widget.manager),
-                          AddDarekView(manager: widget.manager),
-                          FavorisAnnoncePage(manager: widget.manager),
+                          AddOffersView(manager: widget.manager),
+                          FavorisOffersView(manager: widget.manager),
                         ],
                       ),
                     ),

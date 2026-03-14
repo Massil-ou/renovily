@@ -5,18 +5,19 @@ import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
 import '../../Darek/DarekModel.dart';
 
-class MesAnnoncesService {
+class FavorisOffersService {
   final Manager _manager;
-  final HelperService _helper;
+  final HelperService _auth;
 
-  MesAnnoncesService(this._manager, this._helper);
+  FavorisOffersService(this._manager, this._auth);
 
-  static const String listEndpoint = '/renovily/offers/list';
-  static const String updateEndpoint = '/renovily/offers/update';
-  static const String deleteEndpoint = '/renovily/offers/delete';
+  static const String listEndpoint = '/renovily/favoris/list';
+  static const String addEndpoint = '/renovily/favoris/add';
+  static const String deleteEndpoint = '/renovily/favoris/delete';
+  static const String trimOldEndpoint = '/renovily/favoris/trim';
 
-  Future<BaseResponse<List<OfferModel>>> getMesAnnonces() async {
-    final res = await _helper.postTyped<dynamic>(
+  Future<BaseResponse<List<OfferModel>>> listFavorisOffers() async {
+    final res = await _auth.postTyped<dynamic>(
       listEndpoint,
       data: const {},
       parse: null,
@@ -68,28 +69,17 @@ class MesAnnoncesService {
     );
   }
 
-  Future<BaseResponse<OfferModel?>> updateAnnonce(OfferModel item) async {
-    final res = await _helper.postTyped<dynamic>(
-      updateEndpoint,
-      data: {
-        'id': item.id,
-        'titre': item.titre,
-        'description': item.description,
-        'wilaya': item.wilaya,
-        'commune': item.commune,
-        'metier': item.metier,
-        'is_pro': item.isPro ? 1 : 0,
-        'name_pro': item.namePro,
-        'status': item.status.value,
-        'experience_annees': item.experienceAnnees,
-        'prix': item.prix,
-        'unite_prix': item.unitePrix?.value,
-      },
+  Future<BaseResponse<String?>> addFavori({
+    required String idoffer,
+  }) async {
+    final res = await _auth.postTyped<dynamic>(
+      addEndpoint,
+      data: {'idoffer': idoffer},
       parse: null,
     );
 
     if (!res.success) {
-      return BaseResponse<OfferModel?>(
+      return BaseResponse<String?>(
         success: false,
         message: res.message,
         code: res.code,
@@ -98,26 +88,46 @@ class MesAnnoncesService {
     }
 
     final raw = res.data;
-    OfferModel? model;
+    String? idfavorite;
 
     if (raw is Map<String, dynamic>) {
-      model = OfferModel.fromJson(raw);
+      idfavorite = raw['idfavorite']?.toString();
     } else if (raw is Map) {
-      model = OfferModel.fromJson(Map<String, dynamic>.from(raw));
+      final m = Map<String, dynamic>.from(raw);
+      idfavorite = m['idfavorite']?.toString();
+    } else if (raw != null) {
+      idfavorite = raw.toString();
     }
 
-    return BaseResponse<OfferModel?>(
+    return BaseResponse<String?>(
       success: true,
       message: res.message,
       code: res.code,
-      data: model,
+      data: idfavorite,
     );
   }
 
-  Future<BaseResponse<void>> deleteAnnonce(String annonceId) async {
-    final res = await _helper.postTyped<dynamic>(
+  Future<BaseResponse<void>> deleteFavori({
+    required String idfavorite,
+  }) async {
+    final res = await _auth.postTyped<dynamic>(
       deleteEndpoint,
-      data: {'id': annonceId},
+      data: {'idfavorite': idfavorite},
+      parse: null,
+    );
+
+    return BaseResponse<void>(
+      success: res.success,
+      message: res.message,
+      code: res.code,
+      data: null,
+    );
+  }
+
+  Future<BaseResponse<void>> trimOldFavoris() async {
+    final res = await _auth.postTyped<dynamic>(
+      trimOldEndpoint,
+      data: const {},
       parse: null,
     );
 

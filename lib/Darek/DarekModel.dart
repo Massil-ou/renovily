@@ -1,5 +1,119 @@
-class DarekModel {
+enum OfferStatus {
+  pending,
+  visible,
+  deleted;
+
+  String get value {
+    switch (this) {
+      case OfferStatus.pending:
+        return 'pending';
+      case OfferStatus.visible:
+        return 'visible';
+      case OfferStatus.deleted:
+        return 'deleted';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case OfferStatus.pending:
+        return 'En attente';
+      case OfferStatus.visible:
+        return 'Visible';
+      case OfferStatus.deleted:
+        return 'Supprimé';
+    }
+  }
+
+  static OfferStatus fromJson(dynamic value) {
+    final raw = (value ?? '').toString().trim().toLowerCase();
+
+    switch (raw) {
+      case 'visible':
+        return OfferStatus.visible;
+      case 'deleted':
+        return OfferStatus.deleted;
+      case 'pending':
+      default:
+        return OfferStatus.pending;
+    }
+  }
+}
+
+enum OfferPriceUnit {
+  hour,
+  day,
+  service,
+  unit,
+  m2,
+  m3,
+  linearMeter;
+
+  String get value {
+    switch (this) {
+      case OfferPriceUnit.hour:
+        return 'hour';
+      case OfferPriceUnit.day:
+        return 'day';
+      case OfferPriceUnit.service:
+        return 'service';
+      case OfferPriceUnit.unit:
+        return 'unit';
+      case OfferPriceUnit.m2:
+        return 'm2';
+      case OfferPriceUnit.m3:
+        return 'm3';
+      case OfferPriceUnit.linearMeter:
+        return 'linear_meter';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case OfferPriceUnit.hour:
+        return 'Heure';
+      case OfferPriceUnit.day:
+        return 'Jour';
+      case OfferPriceUnit.service:
+        return 'Intervention';
+      case OfferPriceUnit.unit:
+        return 'Unité';
+      case OfferPriceUnit.m2:
+        return 'm²';
+      case OfferPriceUnit.m3:
+        return 'm³';
+      case OfferPriceUnit.linearMeter:
+        return 'Mètre linéaire';
+    }
+  }
+
+  static OfferPriceUnit? fromJson(dynamic value) {
+    final raw = (value ?? '').toString().trim().toLowerCase();
+
+    switch (raw) {
+      case 'hour':
+        return OfferPriceUnit.hour;
+      case 'day':
+        return OfferPriceUnit.day;
+      case 'service':
+        return OfferPriceUnit.service;
+      case 'unit':
+        return OfferPriceUnit.unit;
+      case 'm2':
+        return OfferPriceUnit.m2;
+      case 'm3':
+        return OfferPriceUnit.m3;
+      case 'linear_meter':
+        return OfferPriceUnit.linearMeter;
+      default:
+        return null;
+    }
+  }
+}
+
+class OfferModel {
   final String id;
+  final String? idfavorite;
   final String titre;
   final String description;
   final String wilaya;
@@ -7,16 +121,17 @@ class DarekModel {
   final String metier;
   final bool isPro;
   final String namePro;
-  final String status;
+  final OfferStatus status;
   final int experienceAnnees;
-  final double? prix;
-  final String? unitePrix;
-  final List<DarekImage> images;
+  final int? prix;
+  final OfferPriceUnit? unitePrix;
+  final List<OfferImage> images;
   final DateTime? createdAt;
-  final List<DarekAvis> avis;
+  final List<OfferReviews> avis;
 
-  const DarekModel({
+  const OfferModel({
     required this.id,
+    this.idfavorite,
     required this.titre,
     required this.description,
     required this.wilaya,
@@ -33,9 +148,10 @@ class DarekModel {
     this.createdAt,
   });
 
-  factory DarekModel.fromJson(Map<String, dynamic> json) {
-    return DarekModel(
+  factory OfferModel.fromJson(Map<String, dynamic> json) {
+    return OfferModel(
       id: (json['id'] ?? '').toString().trim(),
+      idfavorite: json['idfavorite']?.toString().trim(),
       titre: (json['titre'] ?? '').toString().trim(),
       description: (json['description'] ?? '').toString().trim(),
       wilaya: (json['wilaya'] ?? '').toString().trim(),
@@ -43,22 +159,22 @@ class DarekModel {
       metier: (json['metier'] ?? '').toString().trim(),
       isPro: json['is_pro'] == true ||
           json['is_pro'] == 1 ||
-          json['is_pro'] == "1",
+          json['is_pro'] == '1',
       namePro: (json['name_pro'] ?? '').toString().trim(),
-      status: (json['status'] ?? 'active').toString().trim(),
+      status: OfferStatus.fromJson(json['status']),
       experienceAnnees: json['experience_annees'] is int
           ? json['experience_annees'] as int
           : int.tryParse(json['experience_annees']?.toString() ?? '') ?? 0,
-      prix: json['prix'] != null
-          ? double.tryParse(json['prix'].toString())
-          : null,
-      unitePrix: json['unite_prix']?.toString(),
+      prix: json['prix'] is int
+          ? json['prix'] as int
+          : int.tryParse(json['prix']?.toString() ?? ''),
+      unitePrix: OfferPriceUnit.fromJson(json['unite_prix']),
       images: (json['images'] as List? ?? [])
-          .map((e) => DarekImage.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((e) => OfferImage.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       createdAt: DateTime.tryParse((json['created_at'] ?? '').toString()),
       avis: (json['avis'] as List? ?? [])
-          .map((e) => DarekAvis.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((e) => OfferReviews.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
     );
   }
@@ -66,6 +182,7 @@ class DarekModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'idfavorite': idfavorite,
       'titre': titre,
       'description': description,
       'wilaya': wilaya,
@@ -73,14 +190,52 @@ class DarekModel {
       'metier': metier,
       'is_pro': isPro,
       'name_pro': namePro,
-      'status': status,
+      'status': status.value,
       'experience_annees': experienceAnnees,
       'prix': prix,
-      'unite_prix': unitePrix,
+      'unite_prix': unitePrix?.value,
       'images': images.map((e) => e.toJson()).toList(),
       'created_at': createdAt?.toIso8601String(),
       'avis': avis.map((e) => e.toJson()).toList(),
     };
+  }
+
+  OfferModel copyWith({
+    String? id,
+    String? idfavorite,
+    String? titre,
+    String? description,
+    String? wilaya,
+    String? commune,
+    String? metier,
+    bool? isPro,
+    String? namePro,
+    OfferStatus? status,
+    int? experienceAnnees,
+    int? prix,
+    OfferPriceUnit? unitePrix,
+    List<OfferImage>? images,
+    DateTime? createdAt,
+    List<OfferReviews>? avis,
+  }) {
+    return OfferModel(
+      id: id ?? this.id,
+      idfavorite: idfavorite ?? this.idfavorite,
+      titre: titre ?? this.titre,
+      description: description ?? this.description,
+      wilaya: wilaya ?? this.wilaya,
+      commune: commune ?? this.commune,
+      metier: metier ?? this.metier,
+      isPro: isPro ?? this.isPro,
+      namePro: namePro ?? this.namePro,
+      status: status ?? this.status,
+      experienceAnnees: experienceAnnees ?? this.experienceAnnees,
+      prix: prix ?? this.prix,
+      unitePrix: unitePrix ?? this.unitePrix,
+      images: images ?? this.images,
+      createdAt: createdAt ?? this.createdAt,
+      avis: avis ?? this.avis,
+    );
   }
 
   int get nbAvis => avis.length;
@@ -106,20 +261,19 @@ class DarekModel {
   int get nb2Etoiles => avis.where((e) => e.note == 2).length;
   int get nb1Etoiles => avis.where((e) => e.note == 1).length;
 
-  bool get isActive => status.toLowerCase() == 'active';
-  bool get isPending => status.toLowerCase() == 'pending';
-  bool get isRejected => status.toLowerCase() == 'rejected';
-  bool get isArchived => status.toLowerCase() == 'archived';
+  bool get isPending => status == OfferStatus.pending;
+  bool get isVisible => status == OfferStatus.visible;
+  bool get isDeleted => status == OfferStatus.deleted;
 }
 
-class DarekAvis {
+class OfferReviews {
   final String prenom;
   final String message;
-  final int note; // 1 à 5
-  final double indiceFinition; // 1.0 à 10.0
+  final int note;
+  final double indiceFinition;
   final DateTime? createdAt;
 
-  const DarekAvis({
+  const OfferReviews({
     required this.prenom,
     required this.message,
     required this.note,
@@ -127,7 +281,7 @@ class DarekAvis {
     this.createdAt,
   });
 
-  factory DarekAvis.fromJson(Map<String, dynamic> json) {
+  factory OfferReviews.fromJson(Map<String, dynamic> json) {
     final rawNote = json['note'] is int
         ? json['note'] as int
         : int.tryParse(json['note']?.toString() ?? '') ?? 1;
@@ -136,7 +290,7 @@ class DarekAvis {
         ? double.tryParse(json['indice_finition'].toString()) ?? 1.0
         : 1.0;
 
-    return DarekAvis(
+    return OfferReviews(
       prenom: (json['prenom'] ?? '').toString().trim(),
       message: (json['message'] ?? '').toString().trim(),
       note: rawNote < 1 ? 1 : (rawNote > 5 ? 5 : rawNote),
@@ -158,15 +312,15 @@ class DarekAvis {
   }
 }
 
-class DarekImage {
+class OfferImage {
   final String url;
 
-  const DarekImage({
+  const OfferImage({
     required this.url,
   });
 
-  factory DarekImage.fromJson(Map<String, dynamic> json) {
-    return DarekImage(
+  factory OfferImage.fromJson(Map<String, dynamic> json) {
+    return OfferImage(
       url: (json['url'] ?? '').toString().trim(),
     );
   }

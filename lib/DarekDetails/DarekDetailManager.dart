@@ -17,7 +17,7 @@ class AddAvisDarekManager extends ChangeNotifier {
 
   Future<bool> sendAvis({
     required String annonceId,
-    required DarekAvis avis,
+    required OfferReviews avis,
   }) async {
     if (isLoading) return false;
 

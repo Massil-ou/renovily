@@ -8,20 +8,20 @@ import '../../DarekDetails/DarekDetailView.dart';
 import '../DarekSettingsView/DarekSettingsView.dart';
 import 'FavorisDarekManager.dart';
 
-class FavorisAnnoncePage extends StatefulWidget {
+class FavorisOffersView extends StatefulWidget {
   final Manager manager;
 
-  const FavorisAnnoncePage({
+  const FavorisOffersView({
     super.key,
     required this.manager,
   });
 
   @override
-  State<FavorisAnnoncePage> createState() => _FavorisAnnoncePageState();
+  State<FavorisOffersView> createState() => _FavorisOffersViewState();
 }
 
-class _FavorisAnnoncePageState extends State<FavorisAnnoncePage> {
-  late final FavorisAnnoncesManager m = widget.manager.favorisAnnoncesManager;
+class _FavorisOffersViewState extends State<FavorisOffersView> {
+  late final FavorisOffersManager m = widget.manager.favorisAnnoncesManager;
 
   @override
   void initState() {
@@ -106,14 +106,14 @@ class _FavorisAnnoncePageState extends State<FavorisAnnoncePage> {
     return result == true;
   }
 
-  String _price(DarekModel a) {
+  String _price(OfferModel a) {
     if (a.prix == null) return 'Prix à négocier';
-    final unit = (a.unitePrix ?? '').trim();
+    final unit = (a.unitePrix?.value ?? '').trim();
     if (unit.isEmpty) return "${a.prix!.toStringAsFixed(0)} DA";
     return "${a.prix!.toStringAsFixed(0)} DA / $unit";
   }
 
-  String _subtitle(DarekModel a) {
+  String _subtitle(OfferModel a) {
     final parts = <String>[
       if (a.metier.trim().isNotEmpty) a.metier.trim(),
       if (a.wilaya.trim().isNotEmpty) a.wilaya.trim(),
@@ -122,14 +122,14 @@ class _FavorisAnnoncePageState extends State<FavorisAnnoncePage> {
     return parts.isEmpty ? '-' : parts.join(' • ');
   }
 
-  Future<void> _deleteFavori(DarekModel item) async {
+  Future<void> _deleteFavori(OfferModel item) async {
     final confirm = await _showDeleteConfirmDialog();
     if (!confirm) return;
 
     await m.delete(item.id);
   }
 
-  void _openDetails(DarekModel item) {
+  void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DarekDetailView(

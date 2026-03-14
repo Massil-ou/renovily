@@ -7,9 +7,9 @@ import '../../Darek/DarekModel.dart';
 import '../Card/DarekCard.dart';
 
 class HorizontalDarek extends StatefulWidget {
-  final List<DarekModel> items;
+  final List<OfferModel> items;
   final String emptyText;
-  final void Function(DarekModel) onTap;
+  final void Function(OfferModel) onTap;
   final bool enableImageSwipe;
   final bool buttonScroll;
   final bool showImageIndicators;

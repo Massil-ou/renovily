@@ -15,7 +15,7 @@ import '../Dashboard/LanguageService.dart';
 import '../HorizontalDarek/HorizontalDarek.dart';
 
 class DarekDetailView extends StatefulWidget {
-  final DarekModel? item;
+  final OfferModel? item;
   final String? itemId;
   final Manager manager;
 
@@ -34,7 +34,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   final ScrollController _scrollController = ScrollController();
   final PageController _pageController = PageController();
 
-  DarekModel? _current;
+  OfferModel? _current;
   bool _loading = false;
   String? _inlineError;
   int _page = 0;
@@ -95,7 +95,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 
     try {
       final all = widget.manager.homeManager.currentList.value;
-      DarekModel? found;
+      OfferModel? found;
 
       for (final e in all) {
         if (e.id.toString() == id) {
@@ -181,7 +181,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     return 'https://renovily.com/details/renovily/${Uri.encodeComponent(id)}';
   }
 
-  String _shareMessageForItem(DarekModel item) {
+  String _shareMessageForItem(OfferModel item) {
     final parts = <String>[
       item.titre.trim(),
       if (item.metier.trim().isNotEmpty) item.metier.trim(),
@@ -288,7 +288,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final okAuth = await _ensureAuthenticated();
     if (!okAuth) return;
 
-    final result = await showDialog<DarekAvis>(
+    final result = await showDialog<OfferReviews>(
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
@@ -323,13 +323,13 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     }
   }
 
-  String _priceText(DarekModel item) {
+  String _priceText(OfferModel item) {
     if (item.prix == null) return 'Prix à négocier';
     final p = item.prix!.toStringAsFixed(0);
     return item.unitePrix != null ? '$p DA / ${item.unitePrix}' : '$p DA';
   }
 
-  String _locationText(DarekModel item) {
+  String _locationText(OfferModel item) {
     final w = item.wilaya.trim();
     final c = item.commune.trim();
     if (w.isEmpty && c.isEmpty) return '-';
@@ -338,7 +338,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     return '$c, $w';
   }
 
-  String? _phoneText(DarekModel item) {
+  String? _phoneText(OfferModel item) {
     try {
       final dynamic raw = item;
       final candidates = [
@@ -361,7 +361,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     return null;
   }
 
-  String _messageBody(DarekModel item) {
+  String _messageBody(OfferModel item) {
     final title =
     item.titre.trim().isEmpty ? 'votre annonce' : item.titre.trim();
     return 'Bonjour, je vous contacte au sujet de "$title".';
@@ -424,21 +424,21 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     }
   }
 
-  List<DarekModel> _relatedItems(DarekModel item) {
+  List<OfferModel> _relatedItems(OfferModel item) {
     final all = widget.manager.homeManager.currentList.value;
-    final exact = <DarekModel>[];
-    final sameMetier = <DarekModel>[];
-    final samePlace = <DarekModel>[];
-    final rest = <DarekModel>[];
+    final exact = <OfferModel>[];
+    final sameMetier = <OfferModel>[];
+    final samePlace = <OfferModel>[];
+    final rest = <OfferModel>[];
     final used = <String>{item.id};
 
-    bool sameCategory(DarekModel a, DarekModel b) =>
+    bool sameCategory(OfferModel a, OfferModel b) =>
         a.metier.trim().toLowerCase() == b.metier.trim().toLowerCase();
 
-    bool sameWilaya(DarekModel a, DarekModel b) =>
+    bool sameWilaya(OfferModel a, OfferModel b) =>
         a.wilaya.trim().toLowerCase() == b.wilaya.trim().toLowerCase();
 
-    bool sameCommune(DarekModel a, DarekModel b) =>
+    bool sameCommune(OfferModel a, OfferModel b) =>
         a.commune.trim().toLowerCase() == b.commune.trim().toLowerCase();
 
     for (final e in all) {
@@ -473,7 +473,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       used.add(e.id);
     }
 
-    return <DarekModel>[
+    return <OfferModel>[
       ...exact,
       ...sameMetier,
       ...samePlace,
@@ -481,7 +481,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     ].take(20).toList();
   }
 
-  void _openRelated(DarekModel item) {
+  void _openRelated(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DarekDetailView(
@@ -585,7 +585,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildImageSlider(DarekModel item, {double height = 280}) {
+  Widget _buildImageSlider(OfferModel item, {double height = 280}) {
     final images = item.images;
 
     if (images.isEmpty || images.first.url.trim().isEmpty) {
@@ -805,17 +805,17 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  double _indiceSafe(DarekModel item) {
+  double _indiceSafe(OfferModel item) {
     final raw = item.indiceFinitionMoyen;
     return raw.clamp(1.0, 10.0).toDouble();
   }
 
-  double _noteSafe(DarekModel item) {
+  double _noteSafe(OfferModel item) {
     final raw = item.noteMoyenne;
     return raw.clamp(0.0, 5.0).toDouble();
   }
 
-  Widget _buildInfoGrid(DarekModel item, bool isWide) {
+  Widget _buildInfoGrid(OfferModel item, bool isWide) {
     final cards = [
       _infoTile(
         icon: Icons.work_outline,
@@ -992,7 +992,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildIndiceGauge(DarekModel item) {
+  Widget _buildIndiceGauge(OfferModel item) {
     final score = _indiceSafe(item);
     final progress = ((score - 1.0) / 9.0).clamp(0.0, 1.0);
 
@@ -1090,7 +1090,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildRatingBlock(DarekModel item) {
+  Widget _buildRatingBlock(OfferModel item) {
     final note = _noteSafe(item);
 
     return Container(
@@ -1145,7 +1145,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildExpandableDescription(DarekModel item) {
+  Widget _buildExpandableDescription(OfferModel item) {
     final text = item.description.trim();
     if (text.isEmpty) return const SizedBox.shrink();
 
@@ -1202,7 +1202,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildAvisSection(DarekModel item) {
+  Widget _buildAvisSection(OfferModel item) {
     final avis = item.avis;
     if (avis.isEmpty) {
       return Container(
@@ -1279,7 +1279,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildRelatedSection(DarekModel item) {
+  Widget _buildRelatedSection(OfferModel item) {
     final related = _relatedItems(item);
 
     if (related.isEmpty) return const SizedBox.shrink();
@@ -1307,7 +1307,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildHeaderInfosOnly(DarekModel item, bool isWide) {
+  Widget _buildHeaderInfosOnly(OfferModel item, bool isWide) {
     final namePro = item.namePro.trim();
     final hasNamePro = namePro.isNotEmpty;
 
@@ -1368,7 +1368,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  Widget _buildBody(DarekModel item, bool isWide) {
+  Widget _buildBody(OfferModel item, bool isWide) {
     if (!isWide) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1542,7 +1542,7 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
   }
 
   void _submit() {
-    final avis = DarekAvis(
+    final avis = OfferReviews(
       prenom: _prenomCtrl.text.trim(),
       message: _messageCtrl.text.trim(),
       note: _note,
@@ -1808,7 +1808,7 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
 }
 
 class _AvisTile extends StatelessWidget {
-  final DarekAvis avis;
+  final OfferReviews avis;
 
   const _AvisTile({required this.avis});
 

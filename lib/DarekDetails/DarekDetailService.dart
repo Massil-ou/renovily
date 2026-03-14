@@ -12,7 +12,7 @@ class AddAvisDarekService {
 
   Future<bool> sendAvis({
     required String annonceId,
-    required DarekAvis avis,
+    required OfferReviews avis,
   }) async {
     try {
       final res = await _helper.postTyped<dynamic>(

@@ -12,12 +12,12 @@ class DarekManager {
       : _service = DarekService(manager, helper);
 
   /// Toutes les annonces BTP
-  final ValueNotifier<List<DarekModel>> annonces =
-  ValueNotifier<List<DarekModel>>([]);
+  final ValueNotifier<List<OfferModel>> annonces =
+  ValueNotifier<List<OfferModel>>([]);
 
   /// Résultat filtré / recherche
-  final ValueNotifier<List<DarekModel>> searchAnnonces =
-  ValueNotifier<List<DarekModel>>([]);
+  final ValueNotifier<List<OfferModel>> searchAnnonces =
+  ValueNotifier<List<OfferModel>>([]);
 
   /// Est-ce qu'une recherche est active
   final ValueNotifier<bool> isSearchActive = ValueNotifier<bool>(false);
@@ -58,7 +58,7 @@ class DarekManager {
 
       final fresh = await _service.fetchAnnonces();
 
-      annonces.value = List<DarekModel>.unmodifiable(fresh);
+      annonces.value = List<OfferModel>.unmodifiable(fresh);
       isSearchActive.value = false;
       searchAnnonces.value = const [];
 
@@ -116,7 +116,7 @@ class DarekManager {
         isPro: isPro,
       );
 
-      searchAnnonces.value = List<DarekModel>.unmodifiable(results);
+      searchAnnonces.value = List<OfferModel>.unmodifiable(results);
 
       final hasActiveFilter = selectedQuery.isNotEmpty ||
           selectedW.isNotEmpty ||
@@ -160,14 +160,14 @@ class DarekManager {
     _bump();
   }
 
-  ValueNotifier<List<DarekModel>> get currentList =>
+  ValueNotifier<List<OfferModel>> get currentList =>
       isSearchActive.value ? searchAnnonces : annonces;
 
-  List<DarekModel> displayedList() {
+  List<OfferModel> displayedList() {
     return isSearchActive.value ? searchAnnonces.value : annonces.value;
   }
 
-  DarekModel? displayedItemAt(int index) {
+  OfferModel? displayedItemAt(int index) {
     final list = displayedList();
     if (index < 0 || index >= list.length) return null;
     return list[index];

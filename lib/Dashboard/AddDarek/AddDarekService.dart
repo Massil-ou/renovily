@@ -18,7 +18,7 @@ class AddDarekService {
 
   AddDarekService(this._manager, this._auth);
 
-  static const String _endpoint = '/renovily/btp/annonces_create';
+  static const String endpoint = '/renovily/offers/add';
 
   static const int _webpQuality = 70;
   static const int _minWidth = 1280;
@@ -43,12 +43,13 @@ class AddDarekService {
   }
 
   String _toWebpFilename(String original) {
-    final base =
-    p.basenameWithoutExtension(original.isEmpty ? 'image' : original);
+    final base = p.basenameWithoutExtension(
+      original.isEmpty ? 'image' : original,
+    );
     return '$base.webp';
   }
 
-  Future<BaseResponse<DarekModel>> addAnnonce({
+  Future<BaseResponse<OfferModel>> addAnnonce({
     required String titre,
     required String description,
     required String wilaya,
@@ -57,30 +58,36 @@ class AddDarekService {
     required bool isPro,
     required String namePro,
     required int experienceAnnees,
-    double? prix,
-    String? unitePrix,
+    int? prix,
+    OfferPriceUnit? unitePrix,
+    OfferStatus? status,
     List<AddDarekUploadFile> images = const [],
   }) async {
     try {
       final formData = FormData();
 
       formData.fields.addAll([
-        MapEntry('titre', titre),
-        MapEntry('description', description),
-        MapEntry('wilaya', wilaya),
-        MapEntry('commune', commune),
-        MapEntry('metier', metier),
+        MapEntry('titre', titre.trim()),
+        MapEntry('description', description.trim()),
+        MapEntry('wilaya', wilaya.trim()),
+        MapEntry('commune', commune.trim()),
+        MapEntry('metier', metier.trim()),
         MapEntry('is_pro', isPro ? '1' : '0'),
-        MapEntry('name_pro', namePro),
+        MapEntry('name_pro', namePro.trim()),
         MapEntry('experience_annees', experienceAnnees.toString()),
+        MapEntry('status', (status ?? OfferStatus.pending).value),
       ]);
 
       if (prix != null) {
-        formData.fields.add(MapEntry('prix', prix.toString()));
+        formData.fields.add(
+          MapEntry('prix', prix.toString()),
+        );
       }
 
-      if (unitePrix != null && unitePrix.trim().isNotEmpty) {
-        formData.fields.add(MapEntry('unite_prix', unitePrix.trim()));
+      if (unitePrix != null) {
+        formData.fields.add(
+          MapEntry('unite_prix', unitePrix.value),
+        );
       }
 
       for (final img in images) {
@@ -107,23 +114,74 @@ class AddDarekService {
       }
 
       final res = await _auth.dio.post(
-        _endpoint,
+        endpoint,
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
       );
 
       final raw = res.data;
 
       final Map<String, dynamic> map = raw is Map<String, dynamic>
           ? raw
-          : (jsonDecode(raw.toString()) as Map<String, dynamic>);
+          : Map<String, dynamic>.from(
+        jsonDecode(raw.toString()) as Map,
+      );
 
-      return BaseResponse.fromJson<DarekModel>(
-        map,
-        parse: (j) => DarekModel.fromJson(j),
+      if (map['success'] != true) {
+        return BaseResponse<OfferModel>(
+          success: false,
+          message: (map['message'] ?? 'request_failed').toString(),
+          code: map['code'] is int
+              ? map['code'] as int
+              : int.tryParse(map['code']?.toString() ?? '') ?? -1,
+          data: null,
+        );
+      }
+
+      final data = map['data'];
+      final idoffer = data is Map ? data['idoffer']?.toString() ?? '' : '';
+      final createdImages = <OfferImage>[];
+
+      if (data is Map && data['images'] is List) {
+        for (final e in (data['images'] as List)) {
+          if (e != null) {
+            createdImages.add(
+              OfferImage(url: e.toString()),
+            );
+          }
+        }
+      }
+
+      final model = OfferModel(
+        id: idoffer,
+        titre: titre.trim(),
+        description: description.trim(),
+        wilaya: wilaya.trim(),
+        commune: commune.trim(),
+        metier: metier.trim(),
+        isPro: isPro,
+        namePro: namePro.trim(),
+        status: status ?? OfferStatus.pending,
+        experienceAnnees: experienceAnnees,
+        prix: prix,
+        unitePrix: unitePrix,
+        images: createdImages,
+        avis: const [],
+        createdAt: DateTime.now(),
+      );
+
+      return BaseResponse<OfferModel>(
+        success: true,
+        message: (map['message'] ?? '').toString(),
+        code: map['code'] is int
+            ? map['code'] as int
+            : int.tryParse(map['code']?.toString() ?? '') ?? 0,
+        data: model,
       );
     } catch (_) {
-      return BaseResponse<DarekModel>(
+      return BaseResponse<OfferModel>(
         success: false,
         message: 'network_error',
         code: -1,

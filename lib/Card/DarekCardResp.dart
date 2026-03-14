@@ -18,7 +18,7 @@ class DarekCardResp extends StatefulWidget {
     this.onImageTouchLockScroll,
   });
 
-  final DarekModel item;
+  final OfferModel item;
   final VoidCallback onTap;
   final bool enableImageSwipe;
   final bool buttonScroll;
@@ -75,16 +75,15 @@ class _DarekCardRespState extends State<DarekCardResp> {
       return 'Prix à négocier';
     }
 
-    final p = widget.item.prix!.toStringAsFixed(0);
+    final p = widget.item.prix!.toString();
+    final unit = widget.item.unitePrix?.label ?? '';
 
-    if (widget.item.unitePrix != null &&
-        widget.item.unitePrix!.trim().isNotEmpty) {
-      return '$p DA / ${widget.item.unitePrix}';
+    if (unit.isNotEmpty) {
+      return '$p DA / $unit';
     }
 
     return '$p DA';
   }
-
 
   String _descriptionShort() {
     final d = widget.item.description.trim();
@@ -101,7 +100,6 @@ class _DarekCardRespState extends State<DarekCardResp> {
     final raw = widget.item.indiceFinitionMoyen;
     return raw.clamp(1.0, 10.0).toDouble();
   }
-
 
   void _setImgLock(bool v) {
     if (_imgLock == v) return;
@@ -634,13 +632,15 @@ class _DarekCardRespState extends State<DarekCardResp> {
               border: Border.all(
                 color: Colors.black.withOpacity(0.06),
               ),
-              boxShadow: [
+              boxShadow: widget.shadow
+                  ? [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                 ),
-              ],
+              ]
+                  : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,14 +709,17 @@ class _DarekCardRespState extends State<DarekCardResp> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Text(
-                              _priceText(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 18,
-                                color: Colors.black,
+                            Flexible(
+                              child: Text(
+                                _priceText(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ],
