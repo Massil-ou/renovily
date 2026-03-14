@@ -226,10 +226,6 @@ class HelperService {
     return int.tryParse(v);
   }
 
-  /// ✅ refresh si:
-  /// - access manquant
-  /// - exp manquante
-  /// - ou access expire bientôt
   Future<bool> _shouldRefreshNow() async {
     final rt = await getRefreshToken();
     if (rt == null || rt.isEmpty) return false;
@@ -302,9 +298,9 @@ class HelperService {
 
   bool _isAuthRoute(String p) {
     final path = p.toLowerCase();
-    return path.contains('/login/auth_login') ||
-        path.contains('/login/auth_login_otp') ||
-        path.contains('/login/refresh');
+    return path.contains('/renovily/login/auth_login') ||
+        path.contains('/renovily/login/auth_login_otp') ||
+        path.contains('/renovily/login/refresh');
   }
 
   // ---------------- Force logout ----------------
@@ -501,10 +497,10 @@ class HelperService {
 
       final devHeader = await deviceHeaderValue();
 
-      _apiLog('♻️ Refresh tokens via /login/refresh', rid: rid, tag: 'AUTH');
+      _apiLog('♻️ Refresh tokens via /renovily/login/refresh', rid: rid, tag: 'AUTH');
 
       final res = await _authDio.post(
-        '/login/refresh',
+        '/renovily/login/refresh',
         data: jsonEncode({'refresh_token': rt}),
         options: Options(
           headers: {'X-Device-Id': devHeader},

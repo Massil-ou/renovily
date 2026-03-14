@@ -12,7 +12,7 @@ class AutoLoginService {
 
   AutoLoginService(this._manager, this._auth);
 
-  static const String _endpoint = '/login/auto_login';
+  static const String _endpoint = '/renovily/login/auto_login';
 
   Future<BaseResponse<LoginData>> serviceAutoLogin({
     required String refreshToken,

@@ -8,7 +8,7 @@ class AddAvisDarekService {
 
   AddAvisDarekService(this._manager, this._helper);
 
-  static const String endpoint = '/btp/annonces/add-avis';
+  static const String endpoint = '/renovily/btp/annonces/add-avis';
 
   Future<bool> sendAvis({
     required String annonceId,

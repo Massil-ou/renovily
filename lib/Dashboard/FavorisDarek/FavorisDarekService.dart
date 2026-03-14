@@ -10,9 +10,9 @@ class FavorisAnnoncesService {
 
   FavorisAnnoncesService(this._manager, this._helper);
 
-  static const String getEndpoint = '/btp/favoris/list';
-  static const String addEndpoint = '/btp/favoris/add';
-  static const String deleteEndpoint = '/btp/favoris/delete';
+  static const String getEndpoint = '/renovily/btp/favoris/list';
+  static const String addEndpoint = '/renovily/btp/favoris/add';
+  static const String deleteEndpoint = '/renovily/btp/favoris/delete';
 
   final List<Map<String, dynamic>> _mockFavoris = [
     {

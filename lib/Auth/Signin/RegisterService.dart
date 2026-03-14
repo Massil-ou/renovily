@@ -10,7 +10,7 @@ class RegisterService {
 
   Future<BaseResponse<StatusData>> register(RegisterRequest req) {
     return _auth.postTyped<StatusData>(
-      '/register/auth_register',
+      '/renovily/register/auth_register',
       data: req.toJson(),
       parse: (j) => StatusData.fromJson(j),
     );
@@ -20,7 +20,7 @@ class RegisterService {
       VerifyRegisterOtpRequest req,
       ) {
     return _auth.postTyped<LoginData>(
-      '/register/auth_register_verify_otp',
+      '/renovily/register/auth_register_verify_otp',
       data: req.toJson(),
       parse: (j) => LoginData.fromJson(j),
     );
@@ -28,7 +28,7 @@ class RegisterService {
 
   Future<BaseResponse<StatusData>> resendRegisterOtp(String email) {
     return _auth.postTyped<StatusData>(
-      '/register/auth_register_resend_otp',
+      '/renovily/register/auth_register_resend_otp',
       data: EmailOnlyRequest(email).toJson(),
       parse: (j) => StatusData.fromJson(j),
     );

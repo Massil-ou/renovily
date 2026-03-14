@@ -8,8 +8,8 @@ class DarekService {
 
   DarekService(this._manager, this._helper);
 
-  static const String pathAll = '/btp/annonces_all';
-  static const String pathSearch = '/btp/annonces_search';
+  static const String pathAll = '/renovily/btp/annonces_all';
+  static const String pathSearch = '/renovily/btp/annonces_search';
 
   /// DATA MOCK
   List<Map<String, dynamic>> _mockJson() {

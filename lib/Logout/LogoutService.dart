@@ -15,7 +15,7 @@ class LogoutService {
     String? fcmToken,
   }) {
     return _auth.postTyped<StatusData>(
-      '/auth/logout',
+      '/renovily/auth/logout',
       data: {
         'refresh_token': refreshToken,
         if (fcmToken != null && fcmToken.isNotEmpty) 'fcm_token': fcmToken,

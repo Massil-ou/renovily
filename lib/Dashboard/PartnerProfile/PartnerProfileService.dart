@@ -9,9 +9,9 @@ class PartnerProfileService {
 
   PartnerProfileService(this._manager, this._auth);
 
-  static const _get = '/partner/profile/get';
-  static const _req = '/partner/profile/request';
-  static const _upd = '/partner/profile/update';
+  static const _get = '/renovily/partner/profile/get';
+  static const _req = '/renovily/partner/profile/request';
+  static const _upd = '/renovily/partner/profile/update';
 
   Map<String, dynamic>? _m(dynamic d) =>
       d is Map ? Map<String, dynamic>.from(d) : null;

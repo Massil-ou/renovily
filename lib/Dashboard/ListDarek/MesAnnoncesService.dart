@@ -10,9 +10,9 @@ class MesAnnoncesService {
 
   MesAnnoncesService(this._manager, this._helper);
 
-  static const String listEndpoint = '/btp/mes-annonces/list';
-  static const String updateEndpoint = '/btp/mes-annonces/update';
-  static const String deleteEndpoint = '/btp/mes-annonces/delete';
+  static const String listEndpoint = '/renovily/btp/mes-annonces/list';
+  static const String updateEndpoint = '/renovily/btp/mes-annonces/update';
+  static const String deleteEndpoint = '/renovily/btp/mes-annonces/delete';
 
   final List<Map<String, dynamic>> _mockJson = [
     {

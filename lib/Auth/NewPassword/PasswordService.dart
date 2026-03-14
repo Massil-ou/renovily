@@ -16,7 +16,7 @@ class PasswordService {
     required String newPassword,
   }) {
     return _auth.postTyped<StatusData>(
-      '/password/auth_change_password',
+      '/renovily/password/auth_change_password',
       data: {'email': email, 'token': token, 'new_password': newPassword},
       parse: (j) => StatusData.fromJson(j),
     );

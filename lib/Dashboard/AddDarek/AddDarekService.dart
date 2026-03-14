@@ -18,7 +18,7 @@ class AddDarekService {
 
   AddDarekService(this._manager, this._auth);
 
-  static const String _endpoint = '/btp/annonces_create';
+  static const String _endpoint = '/renovily/btp/annonces_create';
 
   static const int _webpQuality = 70;
   static const int _minWidth = 1280;

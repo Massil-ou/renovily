@@ -10,7 +10,7 @@ class ClientProfileService {
 
   ClientProfileService(this._manager, this._auth);
 
-  static const String pathUpdate = '/client/profile/update';
+  static const String pathUpdate = '/renovily/client/profile/update';
 
   Future<BaseResponse<void>> updateProfile(ClientProfileData data) async {
     final r = await _auth.postTyped<dynamic>(

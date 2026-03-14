@@ -111,7 +111,7 @@ class FcmService {
 
     try {
       final res = await helper.postTyped<StatusData>(
-        '/push/register_fcm',
+        '/renovily/push/register_fcm',
         data: {'email': email, 'fcm_token': token},
         parse: (j) => StatusData.fromJson(j),
       );
@@ -133,7 +133,7 @@ class FcmService {
 
     try {
       final res = await helper.postTyped<StatusData>(
-        '/push/unregister_fcm',
+        '/renovily/push/unregister_fcm',
         data: {'fcm_token': token},
         parse: (j) => StatusData.fromJson(j),
       );
