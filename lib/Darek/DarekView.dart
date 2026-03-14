@@ -5,7 +5,6 @@ import '../Auth/Login/LoginView.dart';
 import '../Card/DarekCardResp.dart';
 import '../Const.dart';
 import '../DarekDetails/DarekDetailView.dart';
-import '../App/AppLanguage.dart';
 import '../App/Manager.dart';
 import '../Dashboard/LanguageService.dart';
 import '../Menu/filters_drawer.dart';

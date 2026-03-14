@@ -1,5 +1,3 @@
-// lib/Views/Details/DarekDetailView.dart
-
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -12,7 +10,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../Darek/DarekModel.dart';
 import '../../Shared/GlassWidgets.dart';
-import '../App/AppLanguage.dart';
 import '../App/Manager.dart';
 import '../Dashboard/LanguageService.dart';
 import '../HorizontalDarek/HorizontalDarek.dart';
