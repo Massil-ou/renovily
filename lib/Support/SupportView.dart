@@ -31,8 +31,8 @@ class _SupportViewState extends State<SupportView> {
   bool _loading = false;
   String? _inlineError;
 
-  static const String _supportEmail = 'winycar.contact@gmail.com';
-  static const String _supportUrl = 'https://winycar.com/support';
+  static const String _supportEmail = 'renovily.contact@gmail.com';
+  static const String _supportUrl = 'https://renovily.com/support';
 
   void _setError(String msg) {
     if (!mounted) return;

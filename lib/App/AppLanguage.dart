@@ -431,9 +431,9 @@ class WinyCar {
   );
 
   String get securityNoteResetLinkOrigin => _t(
-    'Par sécurité, le lien doit provenir de https://winycar.com.',
-    'For security, the link must come from https://winycar.com.',
-    'لأسباب أمنية، يجب أن يكون الرابط من https://winycar.com.',
+    'Par sécurité, le lien doit provenir de https://renovily.com.',
+    'For security, the link must come from https://renovily.com.',
+    'لأسباب أمنية، يجب أن يكون الرابط من https://renovily.com.',
   );
 
   String get passwordRules8MajMinDigitSpecial => _t(

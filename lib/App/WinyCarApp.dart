@@ -145,7 +145,7 @@ class _TomobilAppState extends State<TomobilApp> {
         builder: (context, state) {
           final uri = state.uri;
 
-          final hostOk = uri.host.isEmpty || uri.host == 'winycar.com';
+          final hostOk = uri.host.isEmpty || uri.host == 'renovily.com';
           final pathOk = uri.path == '/reset-password';
           if (!hostOk || !pathOk) {
             return DarekView(manager: widget.manager);
