@@ -9,8 +9,8 @@ import '../Auth/Shared/AuthModels.dart';
 import '../Auth/Signin/RegisterManager.dart';
 import '../Darek/DarekManager.dart';
 import '../DarekDetails/DarekDetailManager.dart';
+import '../DarekDetails/Reviews/OfferReviewsManager.dart';
 import '../Dashboard/FavorisOffers/FavorisDarekManager.dart';
-import '../Dashboard/Reviews/OfferReviewsManager.dart';
 import '../LoginAuto/AutoLoginManager.dart';
 import '../Logout/LogoutManager.dart';
 import '../Dashboard/AddDarek/AddDarekManager.dart';
@@ -74,10 +74,6 @@ class Manager {
     );
   }
 
-  AddAvisDarekManager? _addAvisDarekManager;
-  AddAvisDarekManager get addAvisDarekManager =>
-      _addAvisDarekManager ??= AddAvisDarekManager(this, helperService);
-
   FavorisOffersManager? _favorisAnnoncesManager;
   FavorisOffersManager get favorisAnnoncesManager =>
       _favorisAnnoncesManager ??= FavorisOffersManager(this, helperService);
@@ -102,7 +98,7 @@ class Manager {
       _clientProfileManager ??= ClientProfileManager(this, helperService);
 
   DarekManager? _darekManager;
-  DarekManager get homeManager => _darekManager ??= DarekManager(this, helperService);
+  DarekManager get darekManager => _darekManager ??= DarekManager(this, helperService);
 
   GlobalSingleton? _globalSingleton;
   GlobalSingleton get globalSingleton => _globalSingleton ??= GlobalSingleton();
@@ -123,6 +119,7 @@ class Manager {
   LogoutManager? _logoutManager;
   LogoutManager get logoutManager =>
       _logoutManager ??= LogoutManager(this, helperService);
+
 
   OfferReviewsManager? _offerReviewsManager;
   OfferReviewsManager get offerReviewsManager =>

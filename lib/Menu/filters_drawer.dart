@@ -55,7 +55,7 @@ class FiltersDrawer extends StatelessWidget {
   }
 
   List<String> _allMetiers() {
-    final items = manager.homeManager.currentList.value;
+    final items = manager.darekManager.currentList.value;
     final set = <String>{};
 
     for (final e in items) {

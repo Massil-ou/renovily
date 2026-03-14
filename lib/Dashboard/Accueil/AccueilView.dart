@@ -33,8 +33,8 @@ class _AccueilViewState extends State<AccueilView> {
   final List<String> _communes = [];
   final List<String> _metiers = [];
 
-  double? _prixMin;
-  double? _prixMax;
+  int? _prixMin;
+  int? _prixMax;
   bool? _isPro;
 
   @override
@@ -43,7 +43,7 @@ class _AccueilViewState extends State<AccueilView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        await widget.manager.homeManager.init();
+        await widget.manager.darekManager.init();
       } catch (_) {}
     });
   }
@@ -55,7 +55,7 @@ class _AccueilViewState extends State<AccueilView> {
   Future<void> _onSearch() async {
     FocusScope.of(context).unfocus();
 
-    await widget.manager.homeManager.applyFilters(
+    await widget.manager.darekManager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -107,13 +107,13 @@ class _AccueilViewState extends State<AccueilView> {
       _isPro = null;
     });
 
-    widget.manager.homeManager.clearFilters();
+    widget.manager.darekManager.clearFilters();
   }
 
   Future<void> _onApply() async {
     Navigator.of(context).maybePop();
 
-    await widget.manager.homeManager.applyFilters(
+    await widget.manager.darekManager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -243,6 +243,12 @@ class _AccueilViewState extends State<AccueilView> {
                             onSearch: _onSearch,
                             onFilters: _openFilters,
                           ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _buildActiveFilterBadges(),
+                          ),
                         ],
                       ),
                     ),
@@ -268,11 +274,11 @@ class _AccueilViewState extends State<AccueilView> {
     widgets.addAll(_metiers.map((e) => _FilterBadge(text: e)));
 
     if (_prixMin != null) {
-      widgets.add(_FilterBadge(text: 'Min ${_prixMin!.toStringAsFixed(0)} DA'));
+      widgets.add(_FilterBadge(text: 'Min $_prixMin DA'));
     }
 
     if (_prixMax != null) {
-      widgets.add(_FilterBadge(text: 'Max ${_prixMax!.toStringAsFixed(0)} DA'));
+      widgets.add(_FilterBadge(text: 'Max $_prixMax DA'));
     }
 
     if (_isPro == true) {
@@ -286,57 +292,69 @@ class _AccueilViewState extends State<AccueilView> {
 
   Widget _buildList() {
     return ValueListenableBuilder<List<OfferModel>>(
-      valueListenable: widget.manager.homeManager.currentList,
+      valueListenable: widget.manager.darekManager.currentList,
       builder: (_, items, __) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final crossAxisCount = _gridCount(width);
-            final mainAxisExtent = _cardHeight(width);
-            final padding = _contentPadding(width);
-            final overlap = _listOverlapForWidth(width);
+        return ValueListenableBuilder<bool>(
+          valueListenable: widget.manager.darekManager.isLoading,
+          builder: (_, isLoading, ___) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final crossAxisCount = _gridCount(width);
+                final mainAxisExtent = _cardHeight(width);
+                final padding = _contentPadding(width);
+                final overlap = _listOverlapForWidth(width);
 
-            return Transform.translate(
-              offset: Offset(0, -overlap),
-              child: Padding(
-                padding: EdgeInsets.only(bottom: overlap),
-                child: Column(
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxWidth: _maxContentWidth,
-                        ),
-                        child: Padding(
-                          padding: padding,
-                          child: items.isEmpty
-                              ? const _EmptyState()
-                              : GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: items.length,
-                            gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossAxisCount,
-                              mainAxisSpacing: 18,
-                              crossAxisSpacing: 18,
-                              mainAxisExtent: mainAxisExtent,
+                return Transform.translate(
+                  offset: Offset(0, -overlap),
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: overlap),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxWidth: _maxContentWidth,
                             ),
-                            itemBuilder: (_, index) {
-                              final item = items[index];
-                              return DarekCardResp(
-                                item: item,
-                                shadow: false,
-                                onTap: () => _openDetails(item),
-                              );
-                            },
+                            child: Padding(
+                              padding: padding,
+                              child: isLoading
+                                  ? const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 40),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                                  : items.isEmpty
+                                  ? const _EmptyState()
+                                  : GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: items.length,
+                                gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  mainAxisSpacing: 18,
+                                  crossAxisSpacing: 18,
+                                  mainAxisExtent: mainAxisExtent,
+                                ),
+                                itemBuilder: (_, index) {
+                                  final item = items[index];
+                                  return DarekCardResp(
+                                    item: item,
+                                    shadow: false,
+                                    onTap: () => _openDetails(item),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -392,8 +410,8 @@ class _AccueilViewState extends State<AccueilView> {
             wilayas: _wilayas,
             communes: _communes,
             metiers: _metiers,
-            prixMin: _prixMin,
-            prixMax: _prixMax,
+            prixMin: _prixMin?.toDouble(),
+            prixMax: _prixMax?.toDouble(),
             isPro: _isPro,
             onSelectChanged: _onSelectChanged,
             onMetiersChanged: (v) {
@@ -405,12 +423,12 @@ class _AccueilViewState extends State<AccueilView> {
             },
             onPrixMinChanged: (v) {
               setState(() {
-                _prixMin = v;
+                _prixMin = v?.toInt();
               });
             },
             onPrixMaxChanged: (v) {
               setState(() {
-                _prixMax = v;
+                _prixMax = v?.toInt();
               });
             },
             onIsProChanged: (v) {

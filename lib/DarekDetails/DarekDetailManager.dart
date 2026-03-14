@@ -5,12 +5,12 @@ import '../../App/Manager.dart';
 import '../Darek/DarekModel.dart';
 import 'DarekDetailService.dart';
 
-class AddAvisDarekManager extends ChangeNotifier {
-  final AddAvisDarekService _service;
+class OffersDetailsManager extends ChangeNotifier {
+  final OffersDetailsService _service;
   final Manager _manager;
 
-  AddAvisDarekManager(this._manager, HelperService helper)
-      : _service = AddAvisDarekService(_manager, helper);
+  OffersDetailsManager(this._manager, HelperService helper)
+      : _service = OffersDetailsService(_manager, helper);
 
   bool isLoading = false;
   String? lastError;

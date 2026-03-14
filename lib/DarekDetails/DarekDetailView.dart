@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, TargetPlatform, kIsWeb;
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -42,12 +42,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   bool _showFullDescription = false;
   bool _showAllAvis = false;
   bool _isFavorite = false;
-
-  bool get _isMobileLayout {
-    if (kIsWeb) return false;
-    return defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS;
-  }
+  bool _isReviewActionLoading = false;
 
   bool get _isDesktopLike {
     if (kIsWeb) return true;
@@ -68,11 +63,27 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final provided = widget.item;
     if (provided != null) {
       _current = provided;
+      await _initFavoriteState(provided.id);
       if (mounted) setState(() {});
       return;
     }
 
     await _fetchIfNeeded();
+  }
+
+  Future<void> _initFavoriteState(String offerId) async {
+    try {
+      final local = widget.manager.favorisAnnoncesManager.isFavoriLocal(offerId);
+      if (local) {
+        _isFavorite = true;
+        return;
+      }
+
+      final remote = await widget.manager.favorisAnnoncesManager.isFavori(offerId);
+      _isFavorite = remote;
+    } catch (_) {
+      _isFavorite = widget.manager.favorisAnnoncesManager.isFavoriLocal(offerId);
+    }
   }
 
   Future<void> _fetchIfNeeded() async {
@@ -94,11 +105,11 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     });
 
     try {
-      final all = widget.manager.homeManager.currentList.value;
+      final all = widget.manager.darekManager.currentList.value;
       OfferModel? found;
 
       for (final e in all) {
-        if (e.id.toString() == id) {
+        if (e.id == id) {
           found = e;
           break;
         }
@@ -114,6 +125,8 @@ class _DarekDetailViewState extends State<DarekDetailView> {
         });
         return;
       }
+
+      await _initFavoriteState(found.id);
 
       setState(() {
         _current = found;
@@ -133,8 +146,8 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   void didUpdateWidget(covariant DarekDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final oldId = oldWidget.item?.id.toString() ?? (oldWidget.itemId ?? '');
-    final newId = widget.item?.id.toString() ?? (widget.itemId ?? '');
+    final oldId = oldWidget.item?.id ?? (oldWidget.itemId ?? '');
+    final newId = widget.item?.id ?? (widget.itemId ?? '');
 
     if (oldId.trim() != newId.trim()) {
       _current = null;
@@ -154,6 +167,26 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     _scrollController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  OfferModel _copyItemWithAvis(OfferModel item, List<OfferReviews> avis) {
+    return OfferModel(
+      id: item.id,
+      titre: item.titre,
+      description: item.description,
+      wilaya: item.wilaya,
+      commune: item.commune,
+      metier: item.metier,
+      isPro: item.isPro,
+      namePro: item.namePro,
+      status: item.status,
+      experienceAnnees: item.experienceAnnees,
+      prix: item.prix,
+      unitePrix: item.unitePrix,
+      images: item.images,
+      createdAt: item.createdAt,
+      avis: avis,
+    );
   }
 
   void _scrollToTop() {
@@ -186,8 +219,8 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       item.titre.trim(),
       if (item.metier.trim().isNotEmpty) item.metier.trim(),
       if (item.prix != null)
-        '${item.prix!.toStringAsFixed(0)} DA${item.unitePrix != null ? ' / ${item.unitePrix}' : ''}',
-      _shareUrlForItem(item.id.toString()),
+        '${item.prix} DA${item.unitePrix != null ? ' / ${item.unitePrix!.label}' : ''}',
+      _shareUrlForItem(item.id),
     ];
     return parts.where((e) => e.trim().isNotEmpty).join('\n');
   }
@@ -263,22 +296,89 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   Future<void> _toggleFavorite() async {
+    final item = _current;
+    if (item == null) return;
+
     final ok = await _ensureAuthenticated();
     if (!ok) return;
 
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
+    final done = await widget.manager.favorisAnnoncesManager.toggle(item);
 
-    await _showGlassDialog(
-      title: _isFavorite ? 'Favori ajouté' : 'Favori retiré',
-      message: _isFavorite
-          ? 'Cette annonce a été ajoutée à vos favoris.'
-          : 'Cette annonce a été retirée de vos favoris.',
-      icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
-      iconBg: const Color(0xFFFFEEF3),
-      iconColor: Colors.redAccent,
-    );
+    if (!mounted) return;
+
+    if (done) {
+      final isFav =
+      widget.manager.favorisAnnoncesManager.isFavoriLocal(item.id);
+      setState(() {
+        _isFavorite = isFav;
+      });
+
+      await _showGlassDialog(
+        title: isFav ? 'Favori ajouté' : 'Favori retiré',
+        message: isFav
+            ? 'Cette annonce a été ajoutée à vos favoris.'
+            : 'Cette annonce a été retirée de vos favoris.',
+        icon: isFav ? Icons.favorite : Icons.favorite_border,
+        iconBg: const Color(0xFFFFEEF3),
+        iconColor: Colors.redAccent,
+      );
+    } else {
+      await _showGlassDialog(
+        title: 'Erreur',
+        message: 'Impossible de modifier le favori.',
+        icon: Icons.error_outline,
+        iconBg: const Color(0xFFFFE5E5),
+        iconColor: Colors.redAccent,
+      );
+    }
+  }
+
+  String? _currentUserId() {
+    try {
+      final dynamic raw = widget.manager.currentUser;
+      final candidates = [raw?.iduser, raw?.id, raw?.uuid];
+      for (final v in candidates) {
+        if (v != null) {
+          final s = v.toString().trim();
+          if (s.isNotEmpty) return s;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool _isMyReview(OfferReviews avis) {
+    try {
+      final dynamic raw = avis;
+
+      if (raw.isMine == true) return true;
+
+      final currentUserId = _currentUserId();
+      final reviewUserId = raw.userUuid?.toString().trim();
+
+      if (currentUserId != null &&
+          reviewUserId != null &&
+          reviewUserId.isNotEmpty &&
+          reviewUserId == currentUserId) {
+        return true;
+      }
+    } catch (_) {}
+
+    return false;
+  }
+
+  List<OfferReviews> _sortedAvisWithMineFirst(List<OfferReviews> input) {
+    final items = [...input];
+    items.sort((a, b) {
+      final am = _isMyReview(a) ? 1 : 0;
+      final bm = _isMyReview(b) ? 1 : 0;
+      if (am != bm) return bm.compareTo(am);
+
+      final ad = a.createdAt?.millisecondsSinceEpoch ?? 0;
+      final bd = b.createdAt?.millisecondsSinceEpoch ?? 0;
+      return bd.compareTo(ad);
+    });
+    return items;
   }
 
   Future<void> _openAvisDialog() async {
@@ -288,7 +388,17 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final okAuth = await _ensureAuthenticated();
     if (!okAuth) return;
 
-    final result = await showDialog<OfferReviews>(
+    final alreadyHasMine = item.avis.any(_isMyReview);
+    if (alreadyHasMine) {
+      await _showGlassDialog(
+        title: 'Avis déjà publié',
+        message: 'Vous avez déjà publié un avis pour cette offre.',
+        icon: Icons.info_outline,
+      );
+      return;
+    }
+
+    final result = await showDialog<_AddAvisResult>(
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
@@ -297,36 +407,134 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 
     if (result == null || !mounted) return;
 
-    final ok = await widget.manager.addAvisDarekManager.sendAvis(
-      annonceId: item.id,
-      avis: result,
-    );
+    setState(() {
+      _isReviewActionLoading = true;
+    });
 
-    if (!mounted) return;
-
-    if (ok) {
-      await _showGlassDialog(
-        title: 'Avis envoyé',
-        message: 'Merci, votre avis a bien été envoyé.',
-        icon: Icons.check_circle_outline,
-        iconBg: const Color(0xFFE8F7EC),
-        iconColor: Colors.green,
+    try {
+      final created = await widget.manager.offerReviewsManager.addReview(
+        idoffer: item.id,
+        prenom: result.prenom,
+        message: result.message,
+        note: result.note,
+        indiceFinition: result.indiceFinition,
       );
-    } else {
+
+      if (!mounted) return;
+
+      if (created != null) {
+        final nextAvis = _sortedAvisWithMineFirst([created, ...item.avis]);
+
+        setState(() {
+          _current = _copyItemWithAvis(item, nextAvis);
+        });
+
+        await _showGlassDialog(
+          title: 'Avis envoyé',
+          message: 'Merci, votre avis a bien été envoyé.',
+          icon: Icons.check_circle_outline,
+          iconBg: const Color(0xFFE8F7EC),
+          iconColor: Colors.green,
+        );
+      } else {
+        await _showGlassDialog(
+          title: 'Erreur',
+          message: widget.manager.offerReviewsManager.lastError ??
+              'Impossible d’envoyer votre avis.',
+          icon: Icons.error_outline,
+          iconBg: const Color(0xFFFFE5E5),
+          iconColor: Colors.redAccent,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isReviewActionLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteMyReview(OfferReviews avis) async {
+    final dynamic raw = avis;
+    final String idreview = (raw.idreview ?? '').toString().trim();
+
+    if (idreview.isEmpty) {
       await _showGlassDialog(
         title: 'Erreur',
-        message: 'Impossible d’envoyer votre avis.',
+        message: 'Identifiant de l’avis introuvable.',
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
       );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (_) => const _ConfirmDeleteAvisDialog(),
+    ) ??
+        false;
+
+    if (!confirmed || !mounted) return;
+
+    setState(() {
+      _isReviewActionLoading = true;
+    });
+
+    try {
+      final ok = await widget.manager.offerReviewsManager.deleteReview(
+        idreview: idreview,
+      );
+
+      if (!mounted) return;
+
+      if (ok) {
+        final item = _current;
+        if (item != null) {
+          final nextAvis = item.avis.where((e) {
+            final dynamic r = e;
+            return (r.idreview ?? '').toString().trim() != idreview;
+          }).toList();
+
+          setState(() {
+            _current = _copyItemWithAvis(item, _sortedAvisWithMineFirst(nextAvis));
+          });
+        }
+
+        await _showGlassDialog(
+          title: 'Avis supprimé',
+          message: 'Votre avis a bien été supprimé.',
+          icon: Icons.delete_outline,
+          iconBg: const Color(0xFFFFF3E0),
+          iconColor: Colors.orange,
+        );
+      } else {
+        await _showGlassDialog(
+          title: 'Erreur',
+          message: widget.manager.offerReviewsManager.lastError ??
+              'Impossible de supprimer votre avis.',
+          icon: Icons.error_outline,
+          iconBg: const Color(0xFFFFE5E5),
+          iconColor: Colors.redAccent,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isReviewActionLoading = false;
+        });
+      }
     }
   }
 
   String _priceText(OfferModel item) {
     if (item.prix == null) return 'Prix à négocier';
-    final p = item.prix!.toStringAsFixed(0);
-    return item.unitePrix != null ? '$p DA / ${item.unitePrix}' : '$p DA';
+    return item.unitePrix != null
+        ? '${item.prix} DA / ${item.unitePrix!.label}'
+        : '${item.prix} DA';
   }
 
   String _locationText(OfferModel item) {
@@ -425,7 +633,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   List<OfferModel> _relatedItems(OfferModel item) {
-    final all = widget.manager.homeManager.currentList.value;
+    final all = widget.manager.darekManager.currentList.value;
     final exact = <OfferModel>[];
     final sameMetier = <OfferModel>[];
     final samePlace = <OfferModel>[];
@@ -938,8 +1146,14 @@ class _DarekDetailViewState extends State<DarekDetailView> {
           width: double.infinity,
           height: 52,
           child: OutlinedButton.icon(
-            onPressed: _openAvisDialog,
-            icon: const Icon(Icons.rate_review_outlined, size: 20),
+            onPressed: _isReviewActionLoading ? null : _openAvisDialog,
+            icon: _isReviewActionLoading
+                ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+                : const Icon(Icons.rate_review_outlined, size: 20),
             label: const Text(
               'Laisser un avis',
               style: TextStyle(
@@ -1203,7 +1417,8 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   Widget _buildAvisSection(OfferModel item) {
-    final avis = item.avis;
+    final avis = _sortedAvisWithMineFirst(item.avis);
+
     if (avis.isEmpty) {
       return Container(
         width: double.infinity,
@@ -1245,7 +1460,13 @@ class _DarekDetailViewState extends State<DarekDetailView> {
         _buildRatingBlock(item),
         const SizedBox(height: 12),
         for (int i = 0; i < visibleAvis.length; i++) ...[
-          _AvisTile(avis: visibleAvis[i]),
+          _AvisTile(
+            avis: visibleAvis[i],
+            canDelete: _isMyReview(visibleAvis[i]),
+            onDelete: _isMyReview(visibleAvis[i])
+                ? () => _deleteMyReview(visibleAvis[i])
+                : null,
+          ),
           if (i != visibleAvis.length - 1) const SizedBox(height: 10),
         ],
         if (avis.length > 3) ...[
@@ -1520,6 +1741,20 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 }
 
+class _AddAvisResult {
+  final String prenom;
+  final String message;
+  final int note;
+  final double indiceFinition;
+
+  const _AddAvisResult({
+    required this.prenom,
+    required this.message,
+    required this.note,
+    required this.indiceFinition,
+  });
+}
+
 class _AddAvisDialog extends StatefulWidget {
   const _AddAvisDialog();
 
@@ -1542,15 +1777,20 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
   }
 
   void _submit() {
-    final avis = OfferReviews(
-      prenom: _prenomCtrl.text.trim(),
-      message: _messageCtrl.text.trim(),
-      note: _note,
-      indiceFinition: _indiceFinition,
-      createdAt: DateTime.now(),
-    );
+    final prenom = _prenomCtrl.text.trim();
+    final message = _messageCtrl.text.trim();
 
-    Navigator.pop(context, avis);
+    if (prenom.isEmpty || message.isEmpty) return;
+
+    Navigator.pop(
+      context,
+      _AddAvisResult(
+        prenom: prenom,
+        message: message,
+        note: _note,
+        indiceFinition: _indiceFinition,
+      ),
+    );
   }
 
   Widget _buildStarPicker() {
@@ -1809,8 +2049,14 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
 
 class _AvisTile extends StatelessWidget {
   final OfferReviews avis;
+  final bool canDelete;
+  final VoidCallback? onDelete;
 
-  const _AvisTile({required this.avis});
+  const _AvisTile({
+    required this.avis,
+    this.canDelete = false,
+    this.onDelete,
+  });
 
   String _dateText(DateTime? date) {
     if (date == null) return '';
@@ -1903,6 +2149,18 @@ class _AvisTile extends StatelessWidget {
                   ),
                 ],
               ),
+              if (canDelete && onDelete != null) ...[
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: onDelete,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Supprimer',
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent,
+                  ),
+                ),
+              ],
             ],
           ),
           if (avis.message.trim().isNotEmpty) ...[
@@ -1918,6 +2176,78 @@ class _AvisTile extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _ConfirmDeleteAvisDialog extends StatelessWidget {
+  const _ConfirmDeleteAvisDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Dialog(
+          backgroundColor: Colors.white.withOpacity(0.92),
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: Colors.white.withOpacity(0.9),
+              width: 0.8,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Supprimer votre avis ?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Cette action est définitive.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Annuler'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Supprimer'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

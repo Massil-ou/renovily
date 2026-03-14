@@ -31,14 +31,16 @@ class OfferReviewsManager extends ChangeNotifier {
     try {
       final res = await _service.addReview(
         idoffer: idoffer,
-        prenom: prenom,
-        message: message,
+        prenom: prenom.trim(),
+        message: message.trim(),
         note: note,
         indiceFinition: indiceFinition,
       );
 
       if (!res.success) {
-        lastError = res.message.isNotEmpty ? res.message : 'add_review_failed';
+        lastError = res.message.trim().isNotEmpty
+            ? res.message
+            : 'add_review_failed';
         return null;
       }
 
@@ -62,11 +64,14 @@ class OfferReviewsManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _service.deleteReview(idreview: idreview);
+      final res = await _service.deleteReview(
+        idreview: idreview.trim(),
+      );
 
       if (!res.success) {
-        lastError =
-        res.message.isNotEmpty ? res.message : 'delete_review_failed';
+        lastError = res.message.trim().isNotEmpty
+            ? res.message
+            : 'delete_review_failed';
         return false;
       }
 

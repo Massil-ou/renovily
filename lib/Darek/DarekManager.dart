@@ -11,27 +11,17 @@ class DarekManager {
   DarekManager(Manager manager, HelperService helper)
       : _service = DarekService(manager, helper);
 
-  /// Toutes les annonces BTP
   final ValueNotifier<List<OfferModel>> annonces =
   ValueNotifier<List<OfferModel>>([]);
 
-  /// Résultat filtré / recherche
   final ValueNotifier<List<OfferModel>> searchAnnonces =
   ValueNotifier<List<OfferModel>>([]);
 
-  /// Est-ce qu'une recherche est active
   final ValueNotifier<bool> isSearchActive = ValueNotifier<bool>(false);
-
-  /// Chargement global
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
-
-  /// Dernière erreur
   final ValueNotifier<String?> lastError = ValueNotifier<String?>(null);
-
-  /// Version de refresh UI
   final ValueNotifier<int> dataChangeVersion = ValueNotifier<int>(0);
 
-  /// Derniers filtres
   final ValueNotifier<String> selectedQ = ValueNotifier<String>('');
   final ValueNotifier<List<String>> selectedWilayas =
   ValueNotifier<List<String>>([]);
@@ -39,8 +29,8 @@ class DarekManager {
   ValueNotifier<List<String>>([]);
   final ValueNotifier<List<String>> selectedMetiers =
   ValueNotifier<List<String>>([]);
-  final ValueNotifier<double?> selectedPrixMin = ValueNotifier<double?>(null);
-  final ValueNotifier<double?> selectedPrixMax = ValueNotifier<double?>(null);
+  final ValueNotifier<int?> selectedPrixMin = ValueNotifier<int?>(null);
+  final ValueNotifier<int?> selectedPrixMax = ValueNotifier<int?>(null);
   final ValueNotifier<bool?> selectedIsPro = ValueNotifier<bool?>(null);
 
   void clearLastError() {
@@ -56,7 +46,7 @@ class DarekManager {
       isLoading.value = true;
       clearLastError();
 
-      final fresh = await _service.fetchAnnonces();
+      final fresh = await _service.fetchAnnonces(limit: 100);
 
       annonces.value = List<OfferModel>.unmodifiable(fresh);
       isSearchActive.value = false;
@@ -85,8 +75,8 @@ class DarekManager {
     List<String>? wilayas,
     List<String>? communes,
     List<String>? metiers,
-    double? prixMin,
-    double? prixMax,
+    int? prixMin,
+    int? prixMax,
     bool? isPro,
   }) async {
     try {
@@ -106,18 +96,6 @@ class DarekManager {
       selectedPrixMax.value = prixMax;
       selectedIsPro.value = isPro;
 
-      final results = await _service.searchAnnonces(
-        q: selectedQuery,
-        wilayas: selectedW,
-        communes: selectedC,
-        metiers: selectedM,
-        prixMin: prixMin,
-        prixMax: prixMax,
-        isPro: isPro,
-      );
-
-      searchAnnonces.value = List<OfferModel>.unmodifiable(results);
-
       final hasActiveFilter = selectedQuery.isNotEmpty ||
           selectedW.isNotEmpty ||
           selectedC.isNotEmpty ||
@@ -126,11 +104,26 @@ class DarekManager {
           prixMax != null ||
           isPro != null;
 
-      isSearchActive.value = hasActiveFilter;
-
       if (!hasActiveFilter) {
+        isSearchActive.value = false;
         searchAnnonces.value = const [];
+        _bump();
+        return;
       }
+
+      final results = await _service.searchAnnonces(
+        q: selectedQuery,
+        wilayas: selectedW,
+        communes: selectedC,
+        metiers: selectedM,
+        prixMin: prixMin,
+        prixMax: prixMax,
+        isPro: isPro,
+        limit: 100,
+      );
+
+      searchAnnonces.value = List<OfferModel>.unmodifiable(results);
+      isSearchActive.value = true;
 
       _bump();
     } catch (e, st) {
@@ -175,5 +168,21 @@ class DarekManager {
 
   void _bump() {
     dataChangeVersion.value = dataChangeVersion.value + 1;
+  }
+
+  void dispose() {
+    annonces.dispose();
+    searchAnnonces.dispose();
+    isSearchActive.dispose();
+    isLoading.dispose();
+    lastError.dispose();
+    dataChangeVersion.dispose();
+    selectedQ.dispose();
+    selectedWilayas.dispose();
+    selectedCommunes.dispose();
+    selectedMetiers.dispose();
+    selectedPrixMin.dispose();
+    selectedPrixMax.dispose();
+    selectedIsPro.dispose();
   }
 }

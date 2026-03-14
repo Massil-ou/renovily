@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import '../../App/BaseResponse.dart';
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
@@ -11,8 +9,8 @@ class OfferReviewsService {
 
   OfferReviewsService(this._manager, this._helper);
 
-  static const String addEndpoint = '/renovily/offers/reviews/add';
-  static const String deleteEndpoint = '/renovily/offers/reviews/delete';
+  static const String addEndpoint = '/renovily/reviews/add';
+  static const String deleteEndpoint = '/renovily/reviews/delete';
 
   Future<BaseResponse<OfferReviews?>> addReview({
     required String idoffer,
@@ -25,8 +23,8 @@ class OfferReviewsService {
       addEndpoint,
       data: {
         'idoffer': idoffer,
-        'prenom': prenom,
-        'message': message,
+        'prenom': prenom.trim(),
+        'message': message.trim(),
         'note': note,
         'indice_finition': indiceFinition,
       },

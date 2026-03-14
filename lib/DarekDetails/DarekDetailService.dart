@@ -2,13 +2,13 @@ import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
 import '../Darek/DarekModel.dart';
 
-class AddAvisDarekService {
+class OffersDetailsService {
   final Manager _manager;
   final HelperService _helper;
 
-  AddAvisDarekService(this._manager, this._helper);
+  OffersDetailsService(this._manager, this._helper);
 
-  static const String endpoint = '/renovily/btp/annonces/add-avis';
+  static const String endpoint = '/renovily/offers/getbyid';
 
   Future<bool> sendAvis({
     required String annonceId,
