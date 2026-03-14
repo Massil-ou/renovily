@@ -145,6 +145,8 @@ class _AccueilViewState extends State<AccueilView> {
     super.dispose();
   }
 
+  bool _isMobile(double width) => width < 720;
+
   int _gridCount(double width) {
     if (width >= 1120) return 3;
     if (width >= 720) return 2;
@@ -161,7 +163,15 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   EdgeInsets _contentPadding(double width) {
+    if (_isMobile(width)) {
+      return const EdgeInsets.fromLTRB(6, 0, 6, 90);
+    }
     return const EdgeInsets.fromLTRB(20, 0, 20, 90);
+  }
+
+  double _listOverlapForWidth(double width) {
+    if (_isMobile(width)) return 48;
+    return 0;
   }
 
   Widget _buildHero() {
@@ -274,58 +284,6 @@ class _AccueilViewState extends State<AccueilView> {
     return widgets;
   }
 
-  Widget _buildSectionHeader(int count) {
-    final badges = _buildActiveFilterBadges();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(kGutter, 24, kGutter, 16),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Résultats',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                        height: 1.05,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '$count annonce${count > 1 ? 's' : ''} trouvée${count > 1 ? 's' : ''}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black.withOpacity(0.62),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (badges.isNotEmpty)
-                Flexible(
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.end,
-                    children: badges,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildList() {
     return ValueListenableBuilder<List<DarekModel>>(
       valueListenable: widget.manager.homeManager.currentList,
@@ -336,43 +294,49 @@ class _AccueilViewState extends State<AccueilView> {
             final crossAxisCount = _gridCount(width);
             final mainAxisExtent = _cardHeight(width);
             final padding = _contentPadding(width);
+            final overlap = _listOverlapForWidth(width);
 
-            return Column(
-              children: [
-                //_buildSectionHeader(items.length),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: _maxContentWidth,
-                    ),
-                    child: Padding(
-                      padding: padding,
-                      child: items.isEmpty
-                          ? const _EmptyState()
-                          : GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: items.length,
-                        gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          mainAxisSpacing: 18,
-                          crossAxisSpacing: 18,
-                          mainAxisExtent: mainAxisExtent,
+            return Transform.translate(
+              offset: Offset(0, -overlap),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: overlap),
+                child: Column(
+                  children: [
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _maxContentWidth,
                         ),
-                        itemBuilder: (_, index) {
-                          final item = items[index];
-                          return DarekCardResp(
-                            item: item,
-                            shadow: false,
-                            onTap: () => _openDetails(item),
-                          );
-                        },
+                        child: Padding(
+                          padding: padding,
+                          child: items.isEmpty
+                              ? const _EmptyState()
+                              : GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: items.length,
+                            gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              mainAxisSpacing: 18,
+                              crossAxisSpacing: 18,
+                              mainAxisExtent: mainAxisExtent,
+                            ),
+                            itemBuilder: (_, index) {
+                              final item = items[index];
+                              return DarekCardResp(
+                                item: item,
+                                shadow: false,
+                                onTap: () => _openDetails(item),
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
@@ -457,19 +421,23 @@ class _AccueilViewState extends State<AccueilView> {
             onReset: _onReset,
             onApply: _onApply,
           ),
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                child: Column(
-                  children: [
-                    _buildHero(),
-                    _buildList(),
-                  ],
-                ),
-              ),
-              _floatingFilter(),
-            ],
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    controller: _scrollController,
+                    child: Column(
+                      children: [
+                        _buildHero(),
+                        _buildList(),
+                      ],
+                    ),
+                  ),
+                  _floatingFilter(),
+                ],
+              );
+            },
           ),
         );
       },
