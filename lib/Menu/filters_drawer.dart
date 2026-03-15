@@ -41,12 +41,15 @@ class FiltersDrawer extends StatelessWidget {
 
   List<String> _combineCommunes(List<String> selectedWilayas) {
     if (selectedWilayas.isEmpty) return [];
-    final set = <String>{};
 
+    final set = <String>{};
     for (final w in selectedWilayas) {
       final list = manager.dzLookupService.getCommunes(w, arabic: false);
       for (final c in list) {
-        set.add(c);
+        final value = c.trim();
+        if (value.isNotEmpty) {
+          set.add(value);
+        }
       }
     }
 
@@ -55,12 +58,14 @@ class FiltersDrawer extends StatelessWidget {
   }
 
   List<String> _allMetiers() {
-    final items = manager.darekManager.currentList.value;
+    final items = manager.darekManager.displayedList();
     final set = <String>{};
 
     for (final e in items) {
       final m = e.metier.trim();
-      if (m.isNotEmpty) set.add(m);
+      if (m.isNotEmpty) {
+        set.add(m);
+      }
     }
 
     final result = set.toList()..sort();
@@ -69,7 +74,7 @@ class FiltersDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width.clamp(330, 450).toDouble();
+    final w = MediaQuery.of(context).size.width.clamp(330.0, 450.0).toDouble();
     final allWilayas = manager.dzLookupService.wilayas(arabic: false);
     final allMetiers = _allMetiers();
 
@@ -188,10 +193,7 @@ class _FiltersStatefulState extends State<FiltersStateful> {
   @override
   void initState() {
     super.initState();
-    _wilayas = [...widget.wilayas];
-    _communes = [...widget.communes];
-    _metiers = [...widget.metiers];
-    _isPro = widget.isPro;
+    _syncFromWidget();
     _prixMinCtrl = TextEditingController(
       text: widget.prixMin != null ? widget.prixMin!.toStringAsFixed(0) : '',
     );
@@ -200,16 +202,20 @@ class _FiltersStatefulState extends State<FiltersStateful> {
     );
   }
 
+  void _syncFromWidget() {
+    _wilayas = [...widget.wilayas];
+    _communes = [...widget.communes];
+    _metiers = [...widget.metiers];
+    _isPro = widget.isPro;
+  }
+
   @override
   void didUpdateWidget(covariant FiltersStateful oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (_dirty) return;
 
-    _wilayas = [...widget.wilayas];
-    _communes = [...widget.communes];
-    _metiers = [...widget.metiers];
-    _isPro = widget.isPro;
+    _syncFromWidget();
     _prixMinCtrl.text =
     widget.prixMin != null ? widget.prixMin!.toStringAsFixed(0) : '';
     _prixMaxCtrl.text =
@@ -551,8 +557,10 @@ class _FiltersStatefulState extends State<FiltersStateful> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         _syncBackHard();
+                        setState(() {
+                          _dirty = false;
+                        });
                         _closeDrawerSafely();
-                        _dirty = false;
 
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           widget.onApply();

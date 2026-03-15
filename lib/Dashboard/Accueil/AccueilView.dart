@@ -6,6 +6,7 @@ import '../../Const.dart';
 import '../../Menu/filters_drawer.dart';
 import '../../App/Manager.dart';
 import '../../Offre/DarekModel.dart';
+import '../../Offre/OffreManager.dart';
 import '../LanguageService.dart';
 import '../OfferDetail/OfferDetailView.dart';
 
@@ -36,15 +37,32 @@ class _AccueilViewState extends State<AccueilView> {
   int? _prixMax;
   bool? _isPro;
 
+  OffreManager get _manager => widget.manager.darekManager;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        await widget.manager.darekManager.init();
+        await _manager.init();
       } catch (_) {}
     });
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) return;
+
+    final current = position.pixels;
+    final max = position.maxScrollExtent;
+
+    if (current >= max - 500) {
+      _manager.loadMoreSearch();
+    }
   }
 
   void _openFilters() {
@@ -54,7 +72,7 @@ class _AccueilViewState extends State<AccueilView> {
   Future<void> _onSearch() async {
     FocusScope.of(context).unfocus();
 
-    await widget.manager.darekManager.applyFilters(
+    await _manager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -106,13 +124,13 @@ class _AccueilViewState extends State<AccueilView> {
       _isPro = null;
     });
 
-    widget.manager.darekManager.clearFilters();
+    _manager.clearFilters();
   }
 
   Future<void> _onApply() async {
     Navigator.of(context).maybePop();
 
-    await widget.manager.darekManager.applyFilters(
+    await _manager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -287,70 +305,98 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   Widget _buildList() {
-    return ValueListenableBuilder<List<OfferModel>>(
-      valueListenable: widget.manager.darekManager.currentList,
-      builder: (_, items, __) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _manager.dataChangeVersion,
+      builder: (_, __, ___) {
         return ValueListenableBuilder<bool>(
-          valueListenable: widget.manager.darekManager.isLoading,
+          valueListenable: _manager.isLoading,
           builder: (_, isLoading, ___) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final crossAxisCount = _gridCount(width);
-                final mainAxisExtent = _cardHeight(width);
-                final padding = _contentPadding(width);
-                final overlap = _listOverlapForWidth(width);
+            return ValueListenableBuilder<bool>(
+              valueListenable: _manager.isLoadingMore,
+              builder: (_, isLoadingMore, ___) {
+                final items = _manager.displayedList();
 
-                return Transform.translate(
-                  offset: Offset(0, -overlap),
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: overlap),
-                    child: Column(
-                      children: [
-                        Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: _maxContentWidth,
-                            ),
-                            child: Padding(
-                              padding: padding,
-                              child: isLoading
-                                  ? const Padding(
-                                padding:
-                                EdgeInsets.symmetric(vertical: 40),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final crossAxisCount = _gridCount(width);
+                    final mainAxisExtent = _cardHeight(width);
+                    final padding = _contentPadding(width);
+                    final overlap = _listOverlapForWidth(width);
+
+                    return Transform.translate(
+                      offset: Offset(0, -overlap),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: overlap),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: _maxContentWidth,
                                 ),
-                              )
-                                  : items.isEmpty
-                                  ? const _EmptyState()
-                                  : GridView.builder(
-                                shrinkWrap: true,
-                                physics:
-                                const NeverScrollableScrollPhysics(),
-                                itemCount: items.length,
-                                gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  mainAxisSpacing: 18,
-                                  crossAxisSpacing: 18,
-                                  mainAxisExtent: mainAxisExtent,
+                                child: Padding(
+                                  padding: padding,
+                                  child: isLoading
+                                      ? const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 40,
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                      : items.isEmpty
+                                      ? const _EmptyState()
+                                      : Column(
+                                    children: [
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                        const NeverScrollableScrollPhysics(),
+                                        itemCount: items.length,
+                                        gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount:
+                                          crossAxisCount,
+                                          mainAxisSpacing: 18,
+                                          crossAxisSpacing: 18,
+                                          mainAxisExtent:
+                                          mainAxisExtent,
+                                        ),
+                                        itemBuilder: (_, index) {
+                                          final item = items[index];
+                                          return OfferCardResp(
+                                            item: item,
+                                            shadow: false,
+                                            onTap: () =>
+                                                _openDetails(item),
+                                          );
+                                        },
+                                      ),
+                                      if (isLoadingMore) ...[
+                                        const SizedBox(height: 18),
+                                        const Padding(
+                                          padding:
+                                          EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          child: Center(
+                                            child:
+                                            CircularProgressIndicator(),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                                itemBuilder: (_, index) {
-                                  final item = items[index];
-                                  return OfferCardResp(
-                                    item: item,
-                                    shadow: false,
-                                    onTap: () => _openDetails(item),
-                                  );
-                                },
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             );

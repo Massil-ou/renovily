@@ -111,7 +111,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
     });
 
     try {
-      final fromList = widget.manager.darekManager.currentList.value;
+      final fromList = widget.manager.darekManager.displayedList();
       OfferModel? found;
 
       for (final e in fromList) {
@@ -601,19 +601,8 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   String? _phoneText(OfferModel item) {
-    final candidates = <dynamic>[
-      item.phone,
-      item.phone,
-    ];
-
-    for (final v in candidates) {
-      if (v != null) {
-        final s = v.toString().trim();
-        if (s.isNotEmpty) return s;
-      }
-    }
-
-    return null;
+    final raw = item.phone.toString().trim();
+    return raw.isEmpty ? null : raw;
   }
 
   String _normalizePhoneForDial(String input) {
@@ -715,7 +704,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   List<OfferModel> _relatedItems(OfferModel item) {
-    final all = widget.manager.darekManager.currentList.value;
+    final all = widget.manager.darekManager.displayedList();
     final exact = <OfferModel>[];
     final sameMetier = <OfferModel>[];
     final samePlace = <OfferModel>[];

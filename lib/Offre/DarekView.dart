@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../Auth/Login/LoginView.dart';
+import '../Auth/Signin/SignupView.dart';
 import '../Card/OfferCardResp.dart';
 import '../Const.dart';
 import '../App/Manager.dart';
@@ -10,6 +11,7 @@ import '../Dashboard/OfferDetail/OfferDetailView.dart';
 import '../Menu/filters_drawer.dart';
 import '../Shared/GlassWidgets.dart';
 import 'DarekModel.dart';
+import 'OffreManager.dart';
 
 class DarekView extends StatelessWidget {
   final Manager manager;
@@ -55,6 +57,8 @@ class _DarekMobileViewState extends State<DarekMobileView> {
   bool _showAppBar = true;
   double _lastOffset = 0;
 
+  OffreManager get _manager => widget.manager.darekManager;
+
   @override
   void initState() {
     super.initState();
@@ -62,18 +66,26 @@ class _DarekMobileViewState extends State<DarekMobileView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        await widget.manager.darekManager.init();
+        await _manager.init();
       } catch (_) {}
     });
   }
 
   void _handleScroll() {
     final offset = _scrollController.offset;
+    final delta = offset - _lastOffset;
 
-    if (offset > _lastOffset && _showAppBar) {
+    if (delta > 8 && _showAppBar) {
       setState(() => _showAppBar = false);
-    } else if (offset < _lastOffset && !_showAppBar) {
+    } else if (delta < -8 && !_showAppBar) {
       setState(() => _showAppBar = true);
+    }
+
+    if (_scrollController.position.hasContentDimensions) {
+      final max = _scrollController.position.maxScrollExtent;
+      if (offset >= max - 500) {
+        _manager.loadMoreSearch();
+      }
     }
 
     _lastOffset = offset;
@@ -83,7 +95,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
     _scaffoldKey.currentState?.openDrawer();
   }
 
-  void _openLogin() {
+  void _goToLogin() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => LoginView(manager: widget.manager),
@@ -91,10 +103,36 @@ class _DarekMobileViewState extends State<DarekMobileView> {
     );
   }
 
+  void _goToSignup() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SignupView(manager: widget.manager),
+      ),
+    );
+  }
+
+  Future<void> _openAuthDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (_) => _AuthRequiredDialog(
+        onLogin: () {
+          Navigator.pop(context);
+          _goToLogin();
+        },
+        onSignup: () {
+          Navigator.pop(context);
+          _goToSignup();
+        },
+      ),
+    );
+  }
+
   Future<void> _onSearch() async {
     FocusScope.of(context).unfocus();
 
-    await widget.manager.darekManager.applyFilters(
+    await _manager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -146,13 +184,13 @@ class _DarekMobileViewState extends State<DarekMobileView> {
       _isPro = null;
     });
 
-    widget.manager.darekManager.clearFilters();
+    _manager.clearFilters();
   }
 
   Future<void> _onApply() async {
     Navigator.of(context).maybePop();
 
-    await widget.manager.darekManager.applyFilters(
+    await _manager.applyFilters(
       q: _searchCtrl.text.trim(),
       wilayas: _wilayas,
       communes: _communes,
@@ -327,68 +365,95 @@ class _DarekMobileViewState extends State<DarekMobileView> {
   }
 
   Widget _buildList() {
-    return ValueListenableBuilder<List<OfferModel>>(
-      valueListenable: widget.manager.darekManager.currentList,
-      builder: (_, items, __) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _manager.dataChangeVersion,
+      builder: (_, __, ___) {
         return ValueListenableBuilder<bool>(
-          valueListenable: widget.manager.darekManager.isLoading,
+          valueListenable: _manager.isLoading,
           builder: (_, isLoading, ___) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final crossAxisCount = _gridCount(width);
-                final mainAxisExtent = _cardHeight(width);
-                final padding = _contentPadding(width);
-                final overlap = _listOverlapForWidth(width);
+            return ValueListenableBuilder<bool>(
+              valueListenable: _manager.isLoadingMore,
+              builder: (_, isLoadingMore, ___) {
+                final items = _manager.displayedList();
 
-                return Transform.translate(
-                  offset: Offset(0, -overlap),
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: overlap),
-                    child: Column(
-                      children: [
-                        Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: _maxContentWidth,
-                            ),
-                            child: Padding(
-                              padding: padding,
-                              child: isLoading
-                                  ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 40),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final crossAxisCount = _gridCount(width);
+                    final mainAxisExtent = _cardHeight(width);
+                    final padding = _contentPadding(width);
+                    final overlap = _listOverlapForWidth(width);
+
+                    return Transform.translate(
+                      offset: Offset(0, -overlap),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: overlap),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: _maxContentWidth,
                                 ),
-                              )
-                                  : items.isEmpty
-                                  ? const _EmptyState()
-                                  : GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: items.length,
-                                gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  mainAxisSpacing: 18,
-                                  crossAxisSpacing: 18,
-                                  mainAxisExtent: mainAxisExtent,
+                                child: Padding(
+                                  padding: padding,
+                                  child: isLoading
+                                      ? const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 40,
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                      : items.isEmpty
+                                      ? const _EmptyState()
+                                      : Column(
+                                    children: [
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                        const NeverScrollableScrollPhysics(),
+                                        itemCount: items.length,
+                                        gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossAxisCount,
+                                          mainAxisSpacing: 18,
+                                          crossAxisSpacing: 18,
+                                          mainAxisExtent: mainAxisExtent,
+                                        ),
+                                        itemBuilder: (_, index) {
+                                          final item = items[index];
+                                          return OfferCardResp(
+                                            item: item,
+                                            shadow: false,
+                                            onTap: () =>
+                                                _openDetails(item),
+                                          );
+                                        },
+                                      ),
+                                      if (isLoadingMore) ...[
+                                        const SizedBox(height: 18),
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          child: Center(
+                                            child:
+                                            CircularProgressIndicator(),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                                itemBuilder: (_, index) {
-                                  final item = items[index];
-                                  return OfferCardResp(
-                                    item: item,
-                                    shadow: false,
-                                    onTap: () => _openDetails(item),
-                                  );
-                                },
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             );
@@ -420,7 +485,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
               GlassCircleIconButton(
                 icon: Icons.person_outline,
                 tooltip: widget.manager.winyCarTranslation.myAccount,
-                onTap: _openLogin,
+                onTap: _openAuthDialog,
               ),
             ],
           ),
@@ -529,6 +594,128 @@ class _DarekMobileViewState extends State<DarekMobileView> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AuthRequiredDialog extends StatelessWidget {
+  final VoidCallback onLogin;
+  final VoidCallback onSignup;
+
+  const _AuthRequiredDialog({
+    required this.onLogin,
+    required this.onSignup,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Dialog(
+          backgroundColor: Colors.white.withOpacity(0.92),
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: Colors.white.withOpacity(0.9),
+              width: 0.8,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEAF3FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: Colors.blueAccent,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Bienvenue',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Connectez-vous ou créez un compte pour accéder à votre espace.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onSignup,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          side: BorderSide(
+                            color: Colors.black.withOpacity(0.12),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Inscription',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: onLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Se connecter',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

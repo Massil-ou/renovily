@@ -19,6 +19,7 @@ class OffreManager {
 
   final ValueNotifier<bool> isSearchActive = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isLoadingMore = ValueNotifier<bool>(false);
   final ValueNotifier<String?> lastError = ValueNotifier<String?>(null);
   final ValueNotifier<int> dataChangeVersion = ValueNotifier<int>(0);
 
@@ -33,24 +34,54 @@ class OffreManager {
   final ValueNotifier<int?> selectedPrixMax = ValueNotifier<int?>(null);
   final ValueNotifier<bool?> selectedIsPro = ValueNotifier<bool?>(null);
 
+  List<OfferModel>? _cachedInitialList;
+  bool _didLoadInitial = false;
+
+  int _searchOffset = 0;
+  bool _searchHasMore = false;
+
   void clearLastError() {
     lastError.value = null;
   }
 
   Future<void> init() async {
-    await refreshInitialFromNetwork();
+    if (_didLoadInitial && _cachedInitialList != null) {
+      annonces.value = List<OfferModel>.unmodifiable(_cachedInitialList!);
+      isSearchActive.value = false;
+      searchAnnonces.value = const [];
+      clearLastError();
+      _bump();
+      return;
+    }
+
+    await refreshInitialFromNetwork(force: false);
   }
 
-  Future<void> refreshInitialFromNetwork() async {
+  Future<void> refreshInitialFromNetwork({bool force = true}) async {
+    if (!force && _didLoadInitial && _cachedInitialList != null) {
+      annonces.value = List<OfferModel>.unmodifiable(_cachedInitialList!);
+      isSearchActive.value = false;
+      searchAnnonces.value = const [];
+      clearLastError();
+      _bump();
+      return;
+    }
+
     try {
       isLoading.value = true;
       clearLastError();
 
-      final fresh = await _service.fetchAnnonces(limit: 100);
+      final fresh = await _service.fetchAnnonces();
+
+      _cachedInitialList = List<OfferModel>.unmodifiable(fresh);
+      _didLoadInitial = true;
 
       annonces.value = List<OfferModel>.unmodifiable(fresh);
       isSearchActive.value = false;
       searchAnnonces.value = const [];
+
+      _searchOffset = 0;
+      _searchHasMore = false;
 
       selectedQ.value = '';
       selectedWilayas.value = [];
@@ -62,7 +93,7 @@ class OffreManager {
 
       _bump();
     } catch (e, st) {
-      debugPrint('DarekManager.refreshInitialFromNetwork: $e\n$st');
+      debugPrint('OffreManager.refreshInitialFromNetwork: $e\n$st');
       lastError.value = e.toString();
       _bump();
     } finally {
@@ -107,11 +138,18 @@ class OffreManager {
       if (!hasActiveFilter) {
         isSearchActive.value = false;
         searchAnnonces.value = const [];
+        _searchOffset = 0;
+        _searchHasMore = false;
+
+        if (_cachedInitialList != null) {
+          annonces.value = List<OfferModel>.unmodifiable(_cachedInitialList!);
+        }
+
         _bump();
         return;
       }
 
-      final results = await _service.searchAnnonces(
+      final result = await _service.searchAnnonces(
         q: selectedQuery,
         wilayas: selectedW,
         communes: selectedC,
@@ -119,23 +157,68 @@ class OffreManager {
         prixMin: prixMin,
         prixMax: prixMax,
         isPro: isPro,
-        limit: 100,
+        offset: 0,
       );
 
-      searchAnnonces.value = List<OfferModel>.unmodifiable(results);
+      searchAnnonces.value = List<OfferModel>.unmodifiable(result.items);
       isSearchActive.value = true;
+      _searchOffset = result.nextOffset;
+      _searchHasMore = result.hasMore;
 
       _bump();
     } catch (e, st) {
-      debugPrint('DarekManager.applyFilters: $e\n$st');
+      debugPrint('OffreManager.applyFilters: $e\n$st');
       lastError.value = e.toString();
       isSearchActive.value = false;
       searchAnnonces.value = const [];
+      _searchOffset = 0;
+      _searchHasMore = false;
       _bump();
     } finally {
       isLoading.value = false;
     }
   }
+
+  Future<void> loadMoreSearch() async {
+    if (!isSearchActive.value) return;
+    if (!_searchHasMore) return;
+    if (isLoading.value || isLoadingMore.value) return;
+
+    try {
+      isLoadingMore.value = true;
+      clearLastError();
+
+      final result = await _service.searchAnnonces(
+        q: selectedQ.value,
+        wilayas: selectedWilayas.value,
+        communes: selectedCommunes.value,
+        metiers: selectedMetiers.value,
+        prixMin: selectedPrixMin.value,
+        prixMax: selectedPrixMax.value,
+        isPro: selectedIsPro.value,
+        offset: _searchOffset,
+      );
+
+      final merged = <OfferModel>[
+        ...searchAnnonces.value,
+        ...result.items,
+      ];
+
+      searchAnnonces.value = List<OfferModel>.unmodifiable(merged);
+      _searchOffset = result.nextOffset;
+      _searchHasMore = result.hasMore;
+
+      _bump();
+    } catch (e, st) {
+      debugPrint('OffreManager.loadMoreSearch: $e\n$st');
+      lastError.value = e.toString();
+      _bump();
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
+  bool get hasMoreSearch => _searchHasMore;
 
   void clearFilters() {
     selectedQ.value = '';
@@ -149,12 +232,15 @@ class OffreManager {
     isSearchActive.value = false;
     searchAnnonces.value = const [];
     lastError.value = null;
+    _searchOffset = 0;
+    _searchHasMore = false;
+
+    if (_cachedInitialList != null) {
+      annonces.value = List<OfferModel>.unmodifiable(_cachedInitialList!);
+    }
 
     _bump();
   }
-
-  ValueNotifier<List<OfferModel>> get currentList =>
-      isSearchActive.value ? searchAnnonces : annonces;
 
   List<OfferModel> displayedList() {
     return isSearchActive.value ? searchAnnonces.value : annonces.value;
@@ -175,6 +261,7 @@ class OffreManager {
     searchAnnonces.dispose();
     isSearchActive.dispose();
     isLoading.dispose();
+    isLoadingMore.dispose();
     lastError.dispose();
     dataChangeVersion.dispose();
     selectedQ.dispose();
