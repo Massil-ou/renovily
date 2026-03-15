@@ -4,22 +4,23 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../Darek/DarekModel.dart';
+import '../../App/Manager.dart';
+import '../../HorizontalDarek/HorizontalDarek.dart';
+import '../../Offre/DarekModel.dart';
 import '../../Shared/GlassWidgets.dart';
-import '../App/Manager.dart';
-import '../Dashboard/LanguageService.dart';
-import '../HorizontalDarek/HorizontalDarek.dart';
+import '../LanguageService.dart';
 
-class DarekDetailView extends StatefulWidget {
+class OfferDetailView extends StatefulWidget {
   final OfferModel? item;
   final String? itemId;
   final Manager manager;
 
-  const DarekDetailView({
+  const OfferDetailView({
     super.key,
     this.item,
     this.itemId,
@@ -27,10 +28,10 @@ class DarekDetailView extends StatefulWidget {
   });
 
   @override
-  State<DarekDetailView> createState() => _DarekDetailViewState();
+  State<OfferDetailView> createState() => _DarekDetailViewState();
 }
 
-class _DarekDetailViewState extends State<DarekDetailView> {
+class _DarekDetailViewState extends State<OfferDetailView> {
   final ScrollController _scrollController = ScrollController();
   final PageController _pageController = PageController();
 
@@ -62,7 +63,10 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   Future<void> _bootstrap() async {
     final provided = widget.item;
     if (provided != null) {
-      _current = provided;
+      _current = _copyItemWithAvis(
+        provided,
+        _sortedAvisWithMineFirst(provided.avis),
+      );
       await _initFavoriteState(provided.id);
       if (mounted) setState(() {});
       return;
@@ -79,10 +83,12 @@ class _DarekDetailViewState extends State<DarekDetailView> {
         return;
       }
 
-      final remote = await widget.manager.favorisAnnoncesManager.isFavori(offerId);
+      final remote =
+      await widget.manager.favorisAnnoncesManager.isFavori(offerId);
       _isFavorite = remote;
     } catch (_) {
-      _isFavorite = widget.manager.favorisAnnoncesManager.isFavoriLocal(offerId);
+      _isFavorite =
+          widget.manager.favorisAnnoncesManager.isFavoriLocal(offerId);
     }
   }
 
@@ -105,31 +111,53 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     });
 
     try {
-      final all = widget.manager.darekManager.currentList.value;
+      final fromList = widget.manager.darekManager.currentList.value;
       OfferModel? found;
 
-      for (final e in all) {
+      for (final e in fromList) {
         if (e.id == id) {
           found = e;
           break;
         }
       }
 
-      if (!mounted) return;
+      if (found != null) {
+        await _initFavoriteState(found.id);
+        if (!mounted) return;
 
-      if (found == null) {
         setState(() {
-          _current = null;
-          _inlineError = 'annonce_introuvable';
+          _current = _copyItemWithAvis(
+            found!,
+            _sortedAvisWithMineFirst(found.avis),
+          );
           _loading = false;
         });
         return;
       }
 
-      await _initFavoriteState(found.id);
+      final loaded = await widget.manager.offersDetailsManager.getOfferById(id);
+
+      if (!mounted) return;
+
+      if (loaded == null) {
+        setState(() {
+          _current = null;
+          _inlineError = widget.manager.offersDetailsManager.lastError ??
+              'annonce_introuvable';
+          _loading = false;
+        });
+        return;
+      }
+
+      await _initFavoriteState(loaded.id);
+
+      if (!mounted) return;
 
       setState(() {
-        _current = found;
+        _current = _copyItemWithAvis(
+          loaded,
+          _sortedAvisWithMineFirst(loaded.avis),
+        );
         _loading = false;
       });
     } catch (e) {
@@ -143,7 +171,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   @override
-  void didUpdateWidget(covariant DarekDetailView oldWidget) {
+  void didUpdateWidget(covariant OfferDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final oldId = oldWidget.item?.id ?? (oldWidget.itemId ?? '');
@@ -172,6 +200,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   OfferModel _copyItemWithAvis(OfferModel item, List<OfferReviews> avis) {
     return OfferModel(
       id: item.id,
+      idfavorite: item.idfavorite,
       titre: item.titre,
       description: item.description,
       wilaya: item.wilaya,
@@ -179,6 +208,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       metier: item.metier,
       isPro: item.isPro,
       namePro: item.namePro,
+      phone: item.phone,
       status: item.status,
       experienceAnnees: item.experienceAnnees,
       prix: item.prix,
@@ -208,6 +238,10 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 
   void _goToLogin() {
     context.go('/login');
+  }
+
+  void _goHome() {
+    context.go('/home');
   }
 
   String _shareUrlForItem(String id) {
@@ -367,6 +401,13 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     return false;
   }
 
+  OfferReviews? _findMyReview(List<OfferReviews> avis) {
+    for (final a in avis) {
+      if (_isMyReview(a)) return a;
+    }
+    return null;
+  }
+
   List<OfferReviews> _sortedAvisWithMineFirst(List<OfferReviews> input) {
     final items = [...input];
     items.sort((a, b) {
@@ -388,7 +429,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final okAuth = await _ensureAuthenticated();
     if (!okAuth) return;
 
-    final alreadyHasMine = item.avis.any(_isMyReview);
+    final alreadyHasMine = _findMyReview(item.avis) != null;
     if (alreadyHasMine) {
       await _showGlassDialog(
         title: 'Avis déjà publié',
@@ -414,7 +455,6 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     try {
       final created = await widget.manager.offerReviewsManager.addReview(
         idoffer: item.id,
-        prenom: result.prenom,
         message: result.message,
         note: result.note,
         indiceFinition: result.indiceFinition,
@@ -456,6 +496,17 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   Future<void> _deleteMyReview(OfferReviews avis) async {
+    if (!_isMyReview(avis)) {
+      await _showGlassDialog(
+        title: 'Action refusée',
+        message: 'Vous ne pouvez supprimer que votre propre avis.',
+        icon: Icons.error_outline,
+        iconBg: const Color(0xFFFFE5E5),
+        iconColor: Colors.redAccent,
+      );
+      return;
+    }
+
     final dynamic raw = avis;
     final String idreview = (raw.idreview ?? '').toString().trim();
 
@@ -500,7 +551,10 @@ class _DarekDetailViewState extends State<DarekDetailView> {
           }).toList();
 
           setState(() {
-            _current = _copyItemWithAvis(item, _sortedAvisWithMineFirst(nextAvis));
+            _current = _copyItemWithAvis(
+              item,
+              _sortedAvisWithMineFirst(nextAvis),
+            );
           });
         }
 
@@ -547,26 +601,44 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   String? _phoneText(OfferModel item) {
-    try {
-      final dynamic raw = item;
-      final candidates = [
-        raw.phone,
-        raw.phonePro,
-        raw.telephone,
-        raw.telephonePro,
-        raw.tel,
-        raw.mobile,
-        raw.whatsapp,
-      ];
+    final candidates = <dynamic>[
+      item.phone,
+      item.phone,
+    ];
 
-      for (final v in candidates) {
-        if (v != null) {
-          final s = v.toString().trim();
-          if (s.isNotEmpty) return s;
-        }
+    for (final v in candidates) {
+      if (v != null) {
+        final s = v.toString().trim();
+        if (s.isNotEmpty) return s;
       }
-    } catch (_) {}
+    }
+
     return null;
+  }
+
+  String _normalizePhoneForDial(String input) {
+    var phone = input.trim();
+
+    if (phone.isEmpty) return '';
+
+    phone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+
+    if (phone.startsWith('00')) {
+      phone = '+${phone.substring(2)}';
+    }
+
+    return phone;
+  }
+
+  String _displayPhone(String input) {
+    final clean = input.replaceAll(RegExp(r'\s+'), '');
+    if (clean.length == 9 && RegExp(r'^\d+$').hasMatch(clean)) {
+      return '${clean.substring(0, 3)} ${clean.substring(3, 6)} ${clean.substring(6)}';
+    }
+    if (clean.length == 10 && RegExp(r'^\d+$').hasMatch(clean)) {
+      return '${clean.substring(0, 3)} ${clean.substring(3, 6)} ${clean.substring(6, 8)} ${clean.substring(8)}';
+    }
+    return input;
   }
 
   String _messageBody(OfferModel item) {
@@ -579,8 +651,10 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final item = _current;
     if (item == null) return;
 
-    final phone = _phoneText(item);
-    if (phone == null || phone.isEmpty) {
+    final rawPhone = _phoneText(item);
+    final phone = rawPhone == null ? '' : _normalizePhoneForDial(rawPhone);
+
+    if (phone.isEmpty) {
       await _showGlassDialog(
         message: 'Numéro de téléphone indisponible.',
         icon: Icons.phone_disabled_outlined,
@@ -590,8 +664,8 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       return;
     }
 
-    final uri = Uri.parse('tel:$phone');
-    final ok = await launchUrl(uri);
+    final uri = Uri(scheme: 'tel', path: phone);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
     if (!ok && mounted) {
       await _showGlassDialog(
@@ -607,8 +681,10 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     final item = _current;
     if (item == null) return;
 
-    final phone = _phoneText(item);
-    if (phone == null || phone.isEmpty) {
+    final rawPhone = _phoneText(item);
+    final phone = rawPhone == null ? '' : _normalizePhoneForDial(rawPhone);
+
+    if (phone.isEmpty) {
       await _showGlassDialog(
         message: 'Numéro de téléphone indisponible.',
         icon: Icons.sms_failed_outlined,
@@ -618,9 +694,15 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       return;
     }
 
-    final body = Uri.encodeComponent(_messageBody(item));
-    final uri = Uri.parse('sms:$phone?body=$body');
-    final ok = await launchUrl(uri);
+    final uri = Uri(
+      scheme: 'sms',
+      path: phone,
+      queryParameters: {
+        'body': _messageBody(item),
+      },
+    );
+
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
     if (!ok && mounted) {
       await _showGlassDialog(
@@ -692,7 +774,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   void _openRelated(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DarekDetailView(
+        builder: (_) => OfferDetailView(
           manager: widget.manager,
           item: item,
         ),
@@ -730,66 +812,55 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     );
   }
 
-  PreferredSizeWidget _buildWebAppBar() {
+  PreferredSizeWidget _buildAppBar() {
+    final s = widget.manager.winyCarTranslation;
+
     return AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: _handleBack,
-      ),
-      title: const Text(
-        'renovily',
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            _isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: _isFavorite ? Colors.redAccent : Colors.black,
-          ),
-          onPressed: _toggleFavorite,
-        ),
-        IconButton(
-          icon: const Icon(Icons.share_outlined, color: Colors.black),
-          onPressed: _shareItem,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileOverlayAppBar() {
-    final statusBar = MediaQuery.of(context).padding.top;
-
-    return Positioned(
-      top: statusBar + 8,
-      left: 16,
-      right: 16,
-      child: Row(
-        children: [
-          GlassCircleIconButton(
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      centerTitle: false,
+      titleSpacing: 8,
+      automaticallyImplyLeading: false,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Center(
+          child: _GlassCircleIconButton(
+            tooltip: s.back,
             icon: Icons.arrow_back_ios_new,
-            tooltip: 'Retour',
             onTap: _handleBack,
           ),
-          const Spacer(),
-          GlassCircleIconButton(
-            icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
-            tooltip: 'Favori',
-            onTap: _toggleFavorite,
-          ),
-          const SizedBox(width: 8),
-          GlassCircleIconButton(
-            icon: Icons.share_outlined,
-            tooltip: 'Partager',
-            onTap: _shareItem,
-          ),
-        ],
+        ),
       ),
+      title: _GlassTitlePill(onTap: _goHome),
+      actions: [
+        Center(
+          child: SizedBox(
+            height: 38,
+            child: GlassCircleLanguageButton(
+              manager: widget.manager,
+              tooltip: s.language,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _GlassCircleIconButton(
+          tooltip: 'Favori',
+          icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
+          onTap: _toggleFavorite,
+          iconColor: _isFavorite ? Colors.redAccent : Colors.white,
+        ),
+        const SizedBox(width: 8),
+        _GlassCircleIconButton(
+          tooltip: 'Partager',
+          icon: Icons.share_outlined,
+          onTap: _shareItem,
+        ),
+        const SizedBox(width: 12),
+      ],
     );
   }
 
@@ -1041,6 +1112,13 @@ class _DarekDetailViewState extends State<DarekDetailView> {
         value: _priceText(item),
       ),
       _infoTile(
+        icon: Icons.phone_outlined,
+        label: 'Téléphone',
+        value: _phoneText(item)?.trim().isNotEmpty == true
+            ? _displayPhone(_phoneText(item)!)
+            : '-',
+      ),
+      _infoTile(
         icon: Icons.calendar_today_outlined,
         label: 'Publié le',
         value: _dateText(item.createdAt),
@@ -1116,6 +1194,9 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   }
 
   Widget _buildActionRow() {
+    final item = _current;
+    final myReview = item == null ? null : _findMyReview(item.avis);
+
     return Column(
       children: [
         Row(
@@ -1142,38 +1223,73 @@ class _DarekDetailViewState extends State<DarekDetailView> {
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: _isReviewActionLoading ? null : _openAvisDialog,
-            icon: _isReviewActionLoading
-                ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : const Icon(Icons.rate_review_outlined, size: 20),
-            label: const Text(
-              'Laisser un avis',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 14,
+        if (myReview == null)
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: _isReviewActionLoading ? null : _openAvisDialog,
+              icon: _isReviewActionLoading
+                  ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : const Icon(Icons.rate_review_outlined, size: 20),
+              label: const Text(
+                'Laisser un avis',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.black,
+                side: BorderSide(
+                  color: Colors.black.withOpacity(0.10),
+                ),
+                backgroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.black,
-              side: BorderSide(
-                color: Colors.black.withOpacity(0.10),
+          )
+        else
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed:
+              _isReviewActionLoading ? null : () => _deleteMyReview(myReview),
+              icon: _isReviewActionLoading
+                  ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : const Icon(Icons.delete_outline, size: 20),
+              label: const Text(
+                'Supprimer mon avis',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
               ),
-              backgroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                side: BorderSide(
+                  color: Colors.redAccent.withOpacity(0.35),
+                ),
+                backgroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -1364,8 +1480,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
     if (text.isEmpty) return const SizedBox.shrink();
 
     final shouldTruncate = text.length > 180;
-    final displayText =
-    (!_showFullDescription && shouldTruncate)
+    final displayText = (!_showFullDescription && shouldTruncate)
         ? '${text.substring(0, 180)}...'
         : text;
 
@@ -1531,6 +1646,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
   Widget _buildHeaderInfosOnly(OfferModel item, bool isWide) {
     final namePro = item.namePro.trim();
     final hasNamePro = namePro.isNotEmpty;
+    final phone = _phoneText(item);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1569,6 +1685,17 @@ class _DarekDetailViewState extends State<DarekDetailView> {
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Colors.black.withOpacity(0.78),
+            ),
+          ),
+        ],
+        if (phone != null && phone.trim().isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            _displayPhone(phone),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.black.withOpacity(0.70),
             ),
           ),
         ],
@@ -1624,7 +1751,7 @@ class _DarekDetailViewState extends State<DarekDetailView> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1180),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1672,14 +1799,16 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 
         if (_loading) {
           return Scaffold(
-            appBar: isWide ? _buildWebAppBar() : null,
+            extendBodyBehindAppBar: true,
+            appBar: _buildAppBar(),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (item == null) {
           return Scaffold(
-            appBar: isWide ? _buildWebAppBar() : null,
+            extendBodyBehindAppBar: true,
+            appBar: _buildAppBar(),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -1713,27 +1842,12 @@ class _DarekDetailViewState extends State<DarekDetailView> {
           );
         }
 
-        if (isWide) {
-          return Scaffold(
-            appBar: _buildWebAppBar(),
-            body: SingleChildScrollView(
-              controller: _scrollController,
-              child: _buildBody(item, true),
-            ),
-          );
-        }
-
         return Scaffold(
           extendBodyBehindAppBar: true,
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                child: _buildBody(item, false),
-              ),
-              _buildMobileOverlayAppBar(),
-            ],
+          appBar: _buildAppBar(),
+          body: SingleChildScrollView(
+            controller: _scrollController,
+            child: _buildBody(item, isWide),
           ),
         );
       },
@@ -1742,13 +1856,11 @@ class _DarekDetailViewState extends State<DarekDetailView> {
 }
 
 class _AddAvisResult {
-  final String prenom;
   final String message;
   final int note;
   final double indiceFinition;
 
   const _AddAvisResult({
-    required this.prenom,
     required this.message,
     required this.note,
     required this.indiceFinition,
@@ -1763,7 +1875,6 @@ class _AddAvisDialog extends StatefulWidget {
 }
 
 class _AddAvisDialogState extends State<_AddAvisDialog> {
-  final TextEditingController _prenomCtrl = TextEditingController();
   final TextEditingController _messageCtrl = TextEditingController();
 
   int _note = 5;
@@ -1771,21 +1882,18 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
 
   @override
   void dispose() {
-    _prenomCtrl.dispose();
     _messageCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
-    final prenom = _prenomCtrl.text.trim();
     final message = _messageCtrl.text.trim();
 
-    if (prenom.isEmpty || message.isEmpty) return;
+    if (message.isEmpty) return;
 
     Navigator.pop(
       context,
       _AddAvisResult(
-        prenom: prenom,
         message: message,
         note: _note,
         indiceFinition: _indiceFinition,
@@ -1867,38 +1975,6 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _prenomCtrl,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      hintText: 'Votre prénom',
-                      filled: true,
-                      fillColor: Colors.black.withOpacity(0.03),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                          color: Colors.black.withOpacity(0.08),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                          color: Colors.black.withOpacity(0.08),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                          color: Colors.black.withOpacity(0.16),
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -2114,13 +2190,40 @@ class _AvisTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      prenom,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            prenom,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        if (canDelete) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF3FF),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: const Text(
+                              'Votre avis',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     if (date.isNotEmpty)
                       Text(
@@ -2449,6 +2552,98 @@ class _GlassInfoDialog extends StatelessWidget {
                   ],
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassTitlePill extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _GlassTitlePill({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.38),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.35),
+                  width: 0.8,
+                ),
+              ),
+              child: const Text(
+                'Renovily',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassCircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? tooltip;
+  final Color? iconColor;
+
+  const _GlassCircleIconButton({
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 38,
+      height: 38,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withOpacity(0.38),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.32),
+            width: 0.8,
+          ),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Tooltip(
+              message: tooltip ?? '',
+              child: Icon(
+                icon,
+                size: 20,
+                color: iconColor ?? Colors.white,
+              ),
             ),
           ),
         ),

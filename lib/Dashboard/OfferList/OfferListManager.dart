@@ -2,15 +2,15 @@ import 'package:flutter/foundation.dart';
 
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import 'MesAnnoncesService.dart';
+import '../../Offre/DarekModel.dart';
+import 'OfferListService.dart';
 
-class MesAnnoncesManager extends ChangeNotifier {
-  final MesAnnoncesService _service;
+class OfferListManager extends ChangeNotifier {
+  final OfferListService _service;
   final Manager _manager;
 
-  MesAnnoncesManager(this._manager, HelperService helper)
-      : _service = MesAnnoncesService(_manager, helper);
+  OfferListManager(this._manager, HelperService helper)
+      : _service = OfferListService(_manager, helper);
 
   bool isLoading = false;
   bool isSaving = false;
@@ -62,14 +62,8 @@ class MesAnnoncesManager extends ChangeNotifier {
         return false;
       }
 
-      final updated = res.data;
-      if (updated == null) {
-        lastError = 'update_failed';
-        return false;
-      }
-
       annonces = annonces.map((e) {
-        if (e.id == updated.id) return updated;
+        if (e.id == item.id) return item;
         return e;
       }).toList();
 

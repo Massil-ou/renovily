@@ -3,25 +3,25 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import '../../DarekDetails/DarekDetailView.dart';
-import '../DarekSettingsView/DarekSettingsView.dart';
-import 'MesAnnoncesManager.dart';
+import '../../Offre/DarekModel.dart';
+import '../OfferDetail/OfferDetailView.dart';
+import '../OfferSetting/OfferSettingView.dart';
+import 'OfferListManager.dart';
 
-class MesAnnoncesPage extends StatefulWidget {
+class OfferListView extends StatefulWidget {
   final Manager manager;
 
-  const MesAnnoncesPage({
+  const OfferListView({
     super.key,
     required this.manager,
   });
 
   @override
-  State<MesAnnoncesPage> createState() => _MesAnnoncesPageState();
+  State<OfferListView> createState() => _MesAnnoncesPageState();
 }
 
-class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
-  late final MesAnnoncesManager m = widget.manager.mesAnnoncesManager;
+class _MesAnnoncesPageState extends State<OfferListView> {
+  late final OfferListManager m = widget.manager.offerListManager;
 
   @override
   void initState() {
@@ -60,10 +60,14 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
 
   String _mapErrorMessage(String code) {
     switch (code) {
+      case 'load_failed':
+        return 'Impossible de charger vos annonces.';
       case 'update_failed':
         return 'Impossible de modifier cette annonce.';
       case 'delete_failed':
         return 'Impossible de supprimer cette annonce.';
+      case 'invalid_payload':
+        return 'Réponse serveur invalide.';
       case 'exception':
         return 'Une erreur est survenue lors de la communication avec le serveur.';
       default:
@@ -132,7 +136,7 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
   void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DarekDetailView(
+        builder: (_) => OfferDetailView(
           manager: widget.manager,
           item: item,
         ),
@@ -197,8 +201,7 @@ class _MesAnnoncesPageState extends State<MesAnnoncesPage> {
                       return Column(
                         children: [
                           AnnonceCardItem(
-                            imageUrl:
-                            a.images.isNotEmpty ? a.images.first.url : null,
+                            imageUrl: a.images.isNotEmpty ? a.images.first.url : null,
                             title: a.titre,
                             subtitle: _subtitle(a),
                             price: _price(a),
@@ -443,6 +446,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
   late final TextEditingController _wilayaCtrl;
   late final TextEditingController _communeCtrl;
   late final TextEditingController _metierCtrl;
+  late final TextEditingController _phoneCtrl;
   late final TextEditingController _prixCtrl;
   late OfferPriceUnit? _selectedUnit;
 
@@ -454,6 +458,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
     _wilayaCtrl = TextEditingController(text: widget.item.wilaya);
     _communeCtrl = TextEditingController(text: widget.item.commune);
     _metierCtrl = TextEditingController(text: widget.item.metier);
+    _phoneCtrl = TextEditingController(text: widget.item.phone);
     _prixCtrl = TextEditingController(
       text: widget.item.prix?.toString() ?? '',
     );
@@ -467,6 +472,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
     _wilayaCtrl.dispose();
     _communeCtrl.dispose();
     _metierCtrl.dispose();
+    _phoneCtrl.dispose();
     _prixCtrl.dispose();
     super.dispose();
   }
@@ -474,6 +480,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
   void _submit() {
     final updated = OfferModel(
       id: widget.item.id,
+      idfavorite: widget.item.idfavorite,
       titre: _titreCtrl.text.trim(),
       description: _descriptionCtrl.text.trim(),
       wilaya: _wilayaCtrl.text.trim(),
@@ -481,6 +488,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
       metier: _metierCtrl.text.trim(),
       isPro: widget.item.isPro,
       namePro: widget.item.namePro,
+      phone: _phoneCtrl.text.trim(),
       status: widget.item.status,
       experienceAnnees: widget.item.experienceAnnees,
       prix: int.tryParse(_prixCtrl.text.trim()),
@@ -589,6 +597,12 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                   TextField(
                     controller: _metierCtrl,
                     decoration: _decoration('Métier'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: _decoration('Téléphone'),
                   ),
                   const SizedBox(height: 12),
                   Row(

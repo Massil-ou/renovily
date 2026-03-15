@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../Darek/DarekModel.dart';
-import 'DarekDetailService.dart';
+import '../../Offre/DarekModel.dart';
+import 'OffersDetailsService.dart';
 
 class OffersDetailsManager extends ChangeNotifier {
   final OffersDetailsService _service;
@@ -15,30 +15,24 @@ class OffersDetailsManager extends ChangeNotifier {
   bool isLoading = false;
   String? lastError;
 
-  Future<bool> sendAvis({
-    required String annonceId,
-    required OfferReviews avis,
-  }) async {
-    if (isLoading) return false;
+  Future<OfferModel?> getOfferById(String itemId) async {
+    if (isLoading) return null;
 
     isLoading = true;
     lastError = null;
     notifyListeners();
 
     try {
-      final ok = await _service.sendAvis(
-        annonceId: annonceId,
-        avis: avis,
-      );
+      final item = await _service.getOfferById(itemId);
 
-      if (!ok) {
-        lastError = 'send_failed';
+      if (item == null) {
+        lastError = 'annonce_introuvable';
       }
 
-      return ok;
+      return item;
     } catch (_) {
       lastError = 'exception';
-      return false;
+      return null;
     } finally {
       isLoading = false;
       notifyListeners();

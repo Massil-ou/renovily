@@ -8,9 +8,9 @@ import '../../Auth/Signin/SignupView.dart';
 import '../../Support/PrivacyPolicyView.dart';
 import '../../Support/SupportView.dart';
 import '../../Support/TermsView.dart';
-import '../Darek/DarekView.dart';
-import '../DarekDetails/DarekDetailView.dart';
 import '../Dashboard/DashboardView.dart';
+import '../Dashboard/OfferDetail/OfferDetailView.dart';
+import '../Offre/DarekView.dart';
 import 'Manager.dart';
 import 'package:flutter/widgets.dart';
 
@@ -81,7 +81,7 @@ class _TomobilAppState extends State<TomobilApp> {
           final rawId = state.pathParameters['id'] ?? '';
           final id = Uri.decodeComponent(rawId);
 
-          return DarekDetailView(
+          return OfferDetailView(
             manager: widget.manager,
             item: state.extra as dynamic,
             itemId: id,
@@ -129,7 +129,7 @@ class _TomobilAppState extends State<TomobilApp> {
               final rawId = state.pathParameters['id'] ?? '';
               final id = Uri.decodeComponent(rawId);
 
-              return DarekDetailView(
+              return OfferDetailView(
                 manager: widget.manager,
                 item: state.extra as dynamic,
                 itemId: id,

@@ -7,9 +7,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../Shared/GlassWidgets.dart';
 import 'Accueil/AccueilView.dart';
 import '../App/AppLanguage.dart';
-import 'DarekSettingsView/DarekSettingsView.dart';
 import '../App/Manager.dart';
 import 'LanguageService.dart';
+import 'OfferSetting/OfferSettingView.dart';
 import 'PartnerSettings/PartnerSettingsView.dart';
 
 class DashboardView extends StatefulWidget {
@@ -135,7 +135,7 @@ class _DashboardViewState extends State<DashboardView> {
         return PartnerSettingsView(manager: widget.manager);
 
       case '/dashboard/myads':
-        return AnnonceSettingView(manager: widget.manager);
+        return OfferSettingView(manager: widget.manager);
 
       case '/dashboard/accueil':
       default:
@@ -204,12 +204,6 @@ class _DashboardViewState extends State<DashboardView> {
               tooltip: s.language,
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        _GlassCircleIconButton(
-          tooltip: s.profile,
-          icon: Icons.person_outline,
-          onTap: _goProfile,
         ),
         const SizedBox(width: 8),
         _GlassCircleIconButton(

@@ -2,25 +2,26 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:renovily/Dashboard/OfferList/OfferListManager.dart';
 import '../Adresse/dz_lookup.dart';
 import '../Auth/Login/LoginManager.dart';
 import '../Auth/NewPassword/PasswordManager.dart';
 import '../Auth/Shared/AuthModels.dart';
 import '../Auth/Signin/RegisterManager.dart';
-import '../Darek/DarekManager.dart';
-import '../DarekDetails/DarekDetailManager.dart';
-import '../DarekDetails/Reviews/OfferReviewsManager.dart';
+import '../Offre/DarekView.dart';
+import '../Dashboard/AddOffer/AddOfferManager.dart';
 import '../Dashboard/FavorisOffers/FavorisDarekManager.dart';
+import '../Dashboard/OfferDetail/OffersDetailsManager.dart';
+import '../Dashboard/OfferDetail/Reviews/OfferReviewsManager.dart';
 import '../LoginAuto/AutoLoginManager.dart';
 import '../Logout/LogoutManager.dart';
-import '../Dashboard/AddDarek/AddDarekManager.dart';
+import '../Offre/OffreManager.dart';
 import 'AppLanguage.dart';
 import 'BaseResponse.dart';
 import '../Notification/FcmService.dart';
 import 'GlobalSingleton.dart';
 import 'HelperService.dart';
 import '../Dashboard/LanguageService.dart';
-import '../Dashboard/ListDarek/MesAnnoncesManager.dart';
 import '../Dashboard/PartnerClient/ClientProfileManager.dart';
 import '../Dashboard/PartnerProfile/PartnerProfileManager.dart';
 
@@ -78,9 +79,9 @@ class Manager {
   FavorisOffersManager get favorisAnnoncesManager =>
       _favorisAnnoncesManager ??= FavorisOffersManager(this, helperService);
 
-  MesAnnoncesManager? _mesAnnoncesManager;
-  MesAnnoncesManager get mesAnnoncesManager =>
-      _mesAnnoncesManager ??= MesAnnoncesManager(this, helperService);
+  OfferListManager? _offerListManager;
+  OfferListManager get offerListManager =>
+      _offerListManager ??= OfferListManager(this, helperService);
 
   DzLookupService? _dzLookupService;
   DzLookupService get dzLookupService => _dzLookupService ??= DzLookupService();
@@ -88,6 +89,10 @@ class Manager {
   AddOfferManager? _addOffersManager;
   AddOfferManager get addOfferManager =>
       _addOffersManager ??= AddOfferManager(this, helperService);
+
+  OffersDetailsManager? _offersDetailsManager;
+  OffersDetailsManager get offersDetailsManager =>
+      _offersDetailsManager ??= OffersDetailsManager(this, helperService);
 
   PartnerProfileManager? _partnerProfileManager;
   PartnerProfileManager get partnerProfileManager =>
@@ -97,8 +102,8 @@ class Manager {
   ClientProfileManager get clientProfileManager =>
       _clientProfileManager ??= ClientProfileManager(this, helperService);
 
-  DarekManager? _darekManager;
-  DarekManager get darekManager => _darekManager ??= DarekManager(this, helperService);
+  OffreManager? _darekManager;
+  OffreManager get darekManager => _darekManager ??= OffreManager(this, helperService);
 
   GlobalSingleton? _globalSingleton;
   GlobalSingleton get globalSingleton => _globalSingleton ??= GlobalSingleton();

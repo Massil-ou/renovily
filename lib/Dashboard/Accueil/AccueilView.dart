@@ -1,13 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-import '../../Card/DarekCardResp.dart';
+import '../../Card/OfferCardResp.dart';
 import '../../Const.dart';
-import '../../Darek/DarekModel.dart';
-import '../../DarekDetails/DarekDetailView.dart';
 import '../../Menu/filters_drawer.dart';
 import '../../App/Manager.dart';
+import '../../Offre/DarekModel.dart';
 import '../LanguageService.dart';
+import '../OfferDetail/OfferDetailView.dart';
 
 class AccueilView extends StatefulWidget {
   final Manager manager;
@@ -23,7 +23,6 @@ class AccueilView extends StatefulWidget {
 
 class _AccueilViewState extends State<AccueilView> {
   static const double _maxContentWidth = 1180.0;
-  static const double _heroHeight = 320;
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchCtrl = TextEditingController();
@@ -130,7 +129,7 @@ class _AccueilViewState extends State<AccueilView> {
   void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DarekDetailView(
+        builder: (_) => OfferDetailView(
           manager: widget.manager,
           item: item,
         ),
@@ -154,9 +153,9 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   double _cardHeight(double width) {
-    if (width >= 1320) return 440;
-    if (width >= 1120) return 425;
-    if (width >= 900) return 415;
+    if (width >= 1320) return 455;
+    if (width >= 1120) return 445;
+    if (width >= 900) return 438;
     if (width >= 720) return 460;
     if (width >= 520) return 450;
     return 440;
@@ -169,14 +168,21 @@ class _AccueilViewState extends State<AccueilView> {
     return const EdgeInsets.fromLTRB(20, 0, 20, 90);
   }
 
+  double _heroHeightForWidth(double width) {
+    if (_isMobile(width)) return 400;
+    return 320;
+  }
+
   double _listOverlapForWidth(double width) {
     if (_isMobile(width)) return 48;
     return 0;
   }
 
-  Widget _buildHero() {
+  Widget _buildHero(double width) {
+    final heroHeight = _heroHeightForWidth(width);
+
     return SizedBox(
-      height: _heroHeight,
+      height: heroHeight,
       child: Stack(
         children: [
           Positioned.fill(
@@ -205,6 +211,7 @@ class _AccueilViewState extends State<AccueilView> {
               padding: const EdgeInsets.fromLTRB(kGutter, 12, kGutter, 12),
               child: Column(
                 children: [
+                  if (_isMobile(width)) const SizedBox(height: 56),
                   Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
@@ -224,17 +231,6 @@ class _AccueilViewState extends State<AccueilView> {
                               color: Colors.white,
                               fontSize: 30,
                               fontWeight: FontWeight.w900,
-                              height: 1.05,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Maçon, plombier, peintre, carreleur, électricien et plus encore.',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.88),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
                             ),
                           ),
                           const SizedBox(height: 22),
@@ -243,7 +239,7 @@ class _AccueilViewState extends State<AccueilView> {
                             onSearch: _onSearch,
                             onFilters: _openFilters,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -320,7 +316,8 @@ class _AccueilViewState extends State<AccueilView> {
                               padding: padding,
                               child: isLoading
                                   ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 40),
+                                padding:
+                                EdgeInsets.symmetric(vertical: 40),
                                 child: Center(
                                   child: CircularProgressIndicator(),
                                 ),
@@ -329,7 +326,8 @@ class _AccueilViewState extends State<AccueilView> {
                                   ? const _EmptyState()
                                   : GridView.builder(
                                 shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
+                                physics:
+                                const NeverScrollableScrollPhysics(),
                                 itemCount: items.length,
                                 gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
@@ -340,7 +338,7 @@ class _AccueilViewState extends State<AccueilView> {
                                 ),
                                 itemBuilder: (_, index) {
                                   final item = items[index];
-                                  return DarekCardResp(
+                                  return OfferCardResp(
                                     item: item,
                                     shadow: false,
                                     onTap: () => _openDetails(item),
@@ -441,13 +439,15 @@ class _AccueilViewState extends State<AccueilView> {
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
               return Stack(
                 children: [
                   SingleChildScrollView(
                     controller: _scrollController,
                     child: Column(
                       children: [
-                        _buildHero(),
+                        _buildHero(width),
                         _buildList(),
                       ],
                     ),

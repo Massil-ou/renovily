@@ -1,11 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import '../../DarekDetails/DarekDetailView.dart';
-import '../DarekSettingsView/DarekSettingsView.dart';
+import '../../Offre/DarekModel.dart';
+import '../OfferDetail/OfferDetailView.dart';
+import '../OfferSetting/OfferSettingView.dart';
 import 'FavorisDarekManager.dart';
 
 class FavorisOffersView extends StatefulWidget {
@@ -132,7 +131,7 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
   void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DarekDetailView(
+        builder: (_) => OfferDetailView(
           manager: widget.manager,
           item: item,
         ),

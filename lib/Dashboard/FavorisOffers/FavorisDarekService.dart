@@ -3,7 +3,7 @@ import 'dart:async';
 import '../../App/BaseResponse.dart';
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
+import '../../Offre/DarekModel.dart';
 
 class FavorisOffersService {
   final Manager _manager;

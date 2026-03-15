@@ -5,40 +5,24 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import 'AddDarekService.dart';
-
-class AddDarekUploadFile {
-  final String filename;
-  final Uint8List bytes;
-  final String mime;
-
-  const AddDarekUploadFile({
-    required this.filename,
-    required this.bytes,
-    required this.mime,
-  });
-
-  bool get isWebp =>
-      mime.toLowerCase() == 'image/webp' ||
-          filename.toLowerCase().endsWith('.webp');
-}
+import '../../Offre/DarekModel.dart';
+import 'AddOfferService.dart';
 
 class AddOfferManager extends ChangeNotifier {
   static const int maxPhotos = 10;
 
-  final AddDarekService _service;
+  final AddOfferService _service;
   final Manager _manager;
 
   AddOfferManager(this._manager, HelperService helper)
-      : _service = AddDarekService(_manager, helper);
+      : _service = AddOfferService(_manager, helper);
 
   final TextEditingController titreCtrl = TextEditingController();
   final TextEditingController descriptionCtrl = TextEditingController();
   final TextEditingController wilayaCtrl = TextEditingController();
   final TextEditingController communeCtrl = TextEditingController();
+  final TextEditingController phoneCtrl = TextEditingController();
   final TextEditingController metierCtrl = TextEditingController();
-  final TextEditingController nameProCtrl = TextEditingController();
   final TextEditingController experienceCtrl = TextEditingController();
   final TextEditingController prixCtrl = TextEditingController();
   final TextEditingController descCtrl = TextEditingController();
@@ -47,7 +31,6 @@ class AddOfferManager extends ChangeNotifier {
   String? lastError;
   OfferModel? lastCreatedOffer;
 
-  bool isPro = false;
   OfferPriceUnit? selectedUnit = OfferPriceUnit.service;
 
   final List<AddDarekUploadFile> _images = [];
@@ -58,8 +41,30 @@ class AddOfferManager extends ChangeNotifier {
 
   int get remainingPhotos => maxPhotos - _images.length;
 
-  void setIsPro(bool value) {
-    isPro = value;
+  bool get currentUserIsPro => _manager.currentUser?.isPro == true;
+
+  String get currentUserNamePro =>
+      (_manager.currentUser?.proProfile?.tradeName ?? '').toString().trim();
+
+  String get currentUserPhone =>
+      (_manager.currentUser?.number ?? '').toString().trim();
+
+  String get currentUserWilaya =>
+      (_manager.currentUser?.wilaya ?? '').toString().trim();
+
+  String get currentUserCommune =>
+      (_manager.currentUser?.commune ?? '').toString().trim();
+
+  void prefillFromCurrentUser() {
+    if (wilayaCtrl.text.trim().isEmpty) {
+      wilayaCtrl.text = currentUserWilaya;
+    }
+    if (communeCtrl.text.trim().isEmpty) {
+      communeCtrl.text = currentUserCommune;
+    }
+    if (phoneCtrl.text.trim().isEmpty) {
+      phoneCtrl.text = currentUserPhone;
+    }
     notifyListeners();
   }
 
@@ -111,9 +116,8 @@ class AddOfferManager extends ChangeNotifier {
     required String description,
     required String wilaya,
     required String commune,
+    required String phone,
     required String metier,
-    required bool isPro,
-    required String namePro,
     required int experienceAnnees,
     int? prix,
     OfferPriceUnit? unitePrix,
@@ -133,8 +137,8 @@ class AddOfferManager extends ChangeNotifier {
         wilaya: wilaya,
         commune: commune,
         metier: metier,
-        isPro: isPro,
-        namePro: namePro,
+        namePro: currentUserNamePro,
+        phone: phone,
         experienceAnnees: experienceAnnees,
         prix: prix,
         unitePrix: unitePrix,
@@ -165,11 +169,10 @@ class AddOfferManager extends ChangeNotifier {
     final description = descCtrl.text.trim();
     final wilaya = wilayaCtrl.text.trim();
     final commune = communeCtrl.text.trim();
+    final phone = phoneCtrl.text.trim();
     final metier = metierCtrl.text.trim();
-    final namePro = nameProCtrl.text.trim();
 
-    final experienceAnnees =
-        int.tryParse(experienceCtrl.text.trim()) ?? 0;
+    final experienceAnnees = int.tryParse(experienceCtrl.text.trim()) ?? 0;
     final prix = int.tryParse(prixCtrl.text.trim());
 
     return addAnnonce(
@@ -177,9 +180,8 @@ class AddOfferManager extends ChangeNotifier {
       description: description,
       wilaya: wilaya,
       commune: commune,
+      phone: phone,
       metier: metier,
-      isPro: isPro,
-      namePro: namePro,
       experienceAnnees: experienceAnnees,
       prix: prix,
       unitePrix: selectedUnit,
@@ -201,15 +203,14 @@ class AddOfferManager extends ChangeNotifier {
   void clearForm() {
     titreCtrl.clear();
     descriptionCtrl.clear();
-    wilayaCtrl.clear();
-    communeCtrl.clear();
+    wilayaCtrl.text = currentUserWilaya;
+    communeCtrl.text = currentUserCommune;
+    phoneCtrl.text = currentUserPhone;
     metierCtrl.clear();
-    nameProCtrl.clear();
     experienceCtrl.clear();
     prixCtrl.clear();
     descCtrl.clear();
 
-    isPro = false;
     selectedUnit = OfferPriceUnit.service;
     _images.clear();
     lastError = null;
@@ -223,11 +224,27 @@ class AddOfferManager extends ChangeNotifier {
     descriptionCtrl.dispose();
     wilayaCtrl.dispose();
     communeCtrl.dispose();
+    phoneCtrl.dispose();
     metierCtrl.dispose();
-    nameProCtrl.dispose();
     experienceCtrl.dispose();
     prixCtrl.dispose();
     descCtrl.dispose();
     super.dispose();
   }
+}
+
+class AddDarekUploadFile {
+  final String filename;
+  final Uint8List bytes;
+  final String mime;
+
+  const AddDarekUploadFile({
+    required this.filename,
+    required this.bytes,
+    required this.mime,
+  });
+
+  bool get isWebp =>
+      mime.toLowerCase() == 'image/webp' ||
+          filename.toLowerCase().endsWith('.webp');
 }

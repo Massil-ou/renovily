@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../../App/HelperService.dart';
-import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
+import '../../../App/HelperService.dart';
+import '../../../App/Manager.dart';
+import '../../../Offre/DarekModel.dart';
 import 'OfferReviewsService.dart';
 
 class OfferReviewsManager extends ChangeNotifier {
@@ -17,7 +17,6 @@ class OfferReviewsManager extends ChangeNotifier {
 
   Future<OfferReviews?> addReview({
     required String idoffer,
-    required String prenom,
     required String message,
     required int note,
     required double indiceFinition,
@@ -30,17 +29,15 @@ class OfferReviewsManager extends ChangeNotifier {
 
     try {
       final res = await _service.addReview(
-        idoffer: idoffer,
-        prenom: prenom.trim(),
+        idoffer: idoffer.trim(),
         message: message.trim(),
         note: note,
         indiceFinition: indiceFinition,
       );
 
       if (!res.success) {
-        lastError = res.message.trim().isNotEmpty
-            ? res.message
-            : 'add_review_failed';
+        lastError =
+        res.message.trim().isNotEmpty ? res.message : 'add_review_failed';
         return null;
       }
 

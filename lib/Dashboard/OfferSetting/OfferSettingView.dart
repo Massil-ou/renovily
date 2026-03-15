@@ -1,45 +1,45 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-import '../AddDarek/AddOffersView.dart';
+import '../AddOffer/AddOffersView.dart';
 import '../FavorisOffers/FavorisDarekView.dart';
 import '../LanguageService.dart';
-import '../ListDarek/ListDarekView.dart';
 import '../../App/Manager.dart';
+import '../OfferList/OfferListView.dart';
 
-enum AnnonceSettingsSection {
+enum OfferSettingsSection {
   mesAnnonces,
   ajouter,
   favoris,
 }
 
-class AnnonceSettingView extends StatefulWidget {
+class OfferSettingView extends StatefulWidget {
   final Manager manager;
 
-  const AnnonceSettingView({
+  const OfferSettingView({
     super.key,
     required this.manager,
   });
 
   @override
-  State<AnnonceSettingView> createState() => _AnnonceSettingViewState();
+  State<OfferSettingView> createState() => _AnnonceSettingViewState();
 }
 
-class _AnnonceSettingViewState extends State<AnnonceSettingView> {
-  AnnonceSettingsSection _section = AnnonceSettingsSection.mesAnnonces;
+class _AnnonceSettingViewState extends State<OfferSettingView> {
+  OfferSettingsSection _section = OfferSettingsSection.mesAnnonces;
 
   int get _index {
     switch (_section) {
-      case AnnonceSettingsSection.mesAnnonces:
+      case OfferSettingsSection.mesAnnonces:
         return 0;
-      case AnnonceSettingsSection.ajouter:
+      case OfferSettingsSection.ajouter:
         return 1;
-      case AnnonceSettingsSection.favoris:
+      case OfferSettingsSection.favoris:
         return 2;
     }
   }
 
-  void _set(AnnonceSettingsSection s) {
+  void _set(OfferSettingsSection s) {
     if (_section == s) return;
     setState(() => _section = s);
   }
@@ -63,9 +63,9 @@ class _AnnonceSettingViewState extends State<AnnonceSettingView> {
                     labelMesAnnonces: 'Mes annonces',
                     labelAjouter: 'Ajouter',
                     labelFavoris: 'Favoris',
-                    onMesAnnonces: () => _set(AnnonceSettingsSection.mesAnnonces),
-                    onAjouter: () => _set(AnnonceSettingsSection.ajouter),
-                    onFavoris: () => _set(AnnonceSettingsSection.favoris),
+                    onMesAnnonces: () => _set(OfferSettingsSection.mesAnnonces),
+                    onAjouter: () => _set(OfferSettingsSection.ajouter),
+                    onFavoris: () => _set(OfferSettingsSection.favoris),
                   );
                 },
               ),
@@ -82,7 +82,7 @@ class _AnnonceSettingViewState extends State<AnnonceSettingView> {
                       child: IndexedStack(
                         index: _index,
                         children: [
-                          MesAnnoncesPage(manager: widget.manager),
+                          OfferListView(manager: widget.manager),
                           AddOffersView(manager: widget.manager),
                           FavorisOffersView(manager: widget.manager),
                         ],
@@ -116,7 +116,7 @@ class _AnnonceBackground extends StatelessWidget {
 }
 
 class _AnnonceSwitchBar extends StatelessWidget {
-  final AnnonceSettingsSection selected;
+  final OfferSettingsSection selected;
   final String labelMesAnnonces;
   final String labelAjouter;
   final String labelFavoris;
@@ -154,7 +154,7 @@ class _AnnonceSwitchBar extends StatelessWidget {
             children: [
               Expanded(
                 child: _ModeBtn(
-                  selected: selected == AnnonceSettingsSection.mesAnnonces,
+                  selected: selected == OfferSettingsSection.mesAnnonces,
                   label: labelMesAnnonces,
                   icon: Icons.list_alt_outlined,
                   onTap: onMesAnnonces,
@@ -163,7 +163,7 @@ class _AnnonceSwitchBar extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: _ModeBtn(
-                  selected: selected == AnnonceSettingsSection.ajouter,
+                  selected: selected == OfferSettingsSection.ajouter,
                   label: labelAjouter,
                   icon: Icons.add_box_outlined,
                   onTap: onAjouter,
@@ -172,7 +172,7 @@ class _AnnonceSwitchBar extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: _ModeBtn(
-                  selected: selected == AnnonceSettingsSection.favoris,
+                  selected: selected == OfferSettingsSection.favoris,
                   label: labelFavoris,
                   icon: Icons.favorite_border,
                   onTap: onFavoris,

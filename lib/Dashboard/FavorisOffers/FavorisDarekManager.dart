@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
+import '../../Offre/DarekModel.dart';
 import 'FavorisDarekService.dart';
 
 class FavorisOffersManager extends ChangeNotifier {

@@ -1,13 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import '../../Darek/DarekModel.dart';
 import '../Adresse/dz_lookup.dart';
 import '../Const.dart';
+import '../Offre/DarekModel.dart';
 
-class DarekCardResp extends StatefulWidget {
-  const DarekCardResp({
+class OfferCardResp extends StatefulWidget {
+  const OfferCardResp({
     super.key,
     required this.item,
     required this.onTap,
@@ -27,10 +26,10 @@ class DarekCardResp extends StatefulWidget {
   final void Function(bool locked)? onImageTouchLockScroll;
 
   @override
-  State<DarekCardResp> createState() => _DarekCardRespState();
+  State<OfferCardResp> createState() => _OfferCardRespState();
 }
 
-class _DarekCardRespState extends State<DarekCardResp> {
+class _OfferCardRespState extends State<OfferCardResp> {
   final PageController _pageCtrl = PageController();
   int _page = 0;
 
@@ -76,10 +75,15 @@ class _DarekCardRespState extends State<DarekCardResp> {
     }
 
     final p = widget.item.prix!.toString();
-    final unit = widget.item.unitePrix?.label ?? '';
+    final rawUnit = (widget.item.unitePrix?.label ?? '').trim();
 
-    if (unit.isNotEmpty) {
-      return '$p DA / $unit';
+    String shortUnit = rawUnit;
+    if (shortUnit.isNotEmpty && shortUnit.length > 3) {
+      shortUnit = shortUnit.substring(0, 3);
+    }
+
+    if (shortUnit.isNotEmpty) {
+      return '$p DA / $shortUnit';
     }
 
     return '$p DA';
@@ -88,8 +92,8 @@ class _DarekCardRespState extends State<DarekCardResp> {
   String _descriptionShort() {
     final d = widget.item.description.trim();
     if (d.isEmpty) return 'Professionnel disponible pour vos travaux.';
-    if (d.length <= 90) return d;
-    return '${d.substring(0, 90)}...';
+    if (d.length <= 110) return d;
+    return '${d.substring(0, 110)}...';
   }
 
   double _noteSafe() {
@@ -268,7 +272,7 @@ class _DarekCardRespState extends State<DarekCardResp> {
 
   Widget _imageSlider(
       BuildContext context, {
-        double height = 220,
+        required double height,
         BorderRadius? radius,
       }) {
     final effectiveRadius = radius ?? BorderRadius.circular(kRadius);
@@ -421,74 +425,7 @@ class _DarekCardRespState extends State<DarekCardResp> {
     );
   }
 
-  Widget _infoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      height: 76,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.black.withOpacity(0.06),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              icon,
-              size: 16,
-              color: Colors.black.withOpacity(0.70),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: Colors.black.withOpacity(0.52),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  value,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _stars(double rating) {
+  Widget _stars(double rating, {double size = 16}) {
     final fullStars = rating.floor();
     final hasHalf = (rating - fullStars) >= 0.5;
 
@@ -508,7 +445,7 @@ class _DarekCardRespState extends State<DarekCardResp> {
           padding: const EdgeInsets.only(right: 1),
           child: Icon(
             icon,
-            size: 16,
+            size: size,
             color: const Color(0xFFF5B301),
           ),
         );
@@ -516,16 +453,16 @@ class _DarekCardRespState extends State<DarekCardResp> {
     );
   }
 
-  Widget _ratingAndIndice() {
+  Widget _ratingAndIndice({required bool compact}) {
     final note = _noteSafe();
     final indice = _indiceSafe();
     final indiceProgress = ((indice - 1.0) / 9.0).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(compact ? 10 : 12),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(compact ? 14 : 16),
         border: Border.all(
           color: Colors.black.withOpacity(0.06),
         ),
@@ -536,33 +473,35 @@ class _DarekCardRespState extends State<DarekCardResp> {
           Row(
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: compact ? 40 : 46,
+                height: compact ? 40 : 46,
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(compact ? 10 : 12),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   note.toStringAsFixed(1),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: compact ? 15 : 18,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: compact ? 10 : 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _stars(note),
+                    _stars(note, size: compact ? 14 : 16),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.item.nbAvis} avis',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: compact ? 11.5 : 12.5,
                         color: Colors.black.withOpacity(0.64),
                         fontWeight: FontWeight.w700,
                       ),
@@ -570,14 +509,14 @@ class _DarekCardRespState extends State<DarekCardResp> {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: compact ? 8 : 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     '${indice.toStringAsFixed(1)}/10',
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: compact ? 13 : 15,
                       fontWeight: FontWeight.w900,
                       color: Colors.black,
                     ),
@@ -585,7 +524,7 @@ class _DarekCardRespState extends State<DarekCardResp> {
                   Text(
                     'Finition',
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: compact ? 10.5 : 11.5,
                       color: Colors.black.withOpacity(0.54),
                       fontWeight: FontWeight.w700,
                     ),
@@ -594,11 +533,11 @@ class _DarekCardRespState extends State<DarekCardResp> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: compact ? 8 : 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
-              minHeight: 8,
+              minHeight: compact ? 6 : 8,
               value: indiceProgress,
               backgroundColor: const Color(0xFFE7EDF4),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
@@ -609,156 +548,182 @@ class _DarekCardRespState extends State<DarekCardResp> {
     );
   }
 
+  Widget _chip(String text, {required bool compact}) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 9,
+        vertical: compact ? 4 : 5,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.black.withOpacity(0.72),
+          fontWeight: FontWeight.w800,
+          fontSize: compact ? 10.5 : 11,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dz = DzLookupService();
     final String? wilayaCode = dz.wilayaCodeFromName(widget.item.wilaya);
     final borderRadius = BorderRadius.circular(22);
 
-    return Material(
-      color: Colors.transparent,
-      child: Listener(
-        onPointerMove: _handlePointerMove,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _handleTapDown,
-          onTapUp: _handleTapUp,
-          onTapCancel: _handleTapCancel,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: borderRadius,
-              border: Border.all(
-                color: Colors.black.withOpacity(0.06),
-              ),
-              boxShadow: widget.shadow
-                  ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _imageSlider(
-                  context,
-                  height: 220,
-                  radius: const BorderRadius.only(
-                    topLeft: Radius.circular(22),
-                    topRight: Radius.circular(22),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardHeight =
+        constraints.maxHeight.isFinite ? constraints.maxHeight : 440.0;
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isWebLike = screenWidth >= 720;
+
+        final compact = isWebLike && cardHeight <= 440;
+        final imageHeight = compact ? 185.0 : 220.0;
+        final contentPadding = compact ? 12.0 : 14.0;
+        final titleLines = compact ? 1 : 2;
+        final descLines = compact ? 1 : 2;
+
+        return Material(
+          color: Colors.transparent,
+          child: Listener(
+            onPointerMove: _handlePointerMove,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _handleTapDown,
+              onTapUp: _handleTapUp,
+              onTapCancel: _handleTapCancel,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: borderRadius,
+                  border: Border.all(
+                    color: Colors.black.withOpacity(0.06),
                   ),
+                  boxShadow: widget.shadow
+                      ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
+                      : null,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _imageSlider(
+                      context,
+                      height: imageHeight,
+                      radius: const BorderRadius.only(
+                        topLeft: Radius.circular(22),
+                        topRight: Radius.circular(22),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          contentPadding,
+                          contentPadding,
+                          contentPadding,
+                          contentPadding,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 9,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.04),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
+                                    children: [
+                                      _chip(
+                                        widget.item.metier.trim().isEmpty
+                                            ? 'Service'
+                                            : widget.item.metier.trim(),
+                                        compact: compact,
+                                      ),
+                                      if (wilayaCode != null &&
+                                          wilayaCode.trim().isNotEmpty)
+                                        _chip(
+                                          'Zone ${wilayaCode.trim().padLeft(2, '0')}',
+                                          compact: compact,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: compact ? 110 : 130,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
                                     child: Text(
-                                      widget.item.metier.trim().isEmpty
-                                          ? 'Service'
-                                          : widget.item.metier.trim(),
+                                      _priceText(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.right,
                                       style: TextStyle(
-                                        color: Colors.black.withOpacity(0.72),
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: compact ? 16 : 18,
+                                        color: Colors.black,
                                       ),
                                     ),
                                   ),
-                                  if (wilayaCode != null && wilayaCode.trim().isNotEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 9,
-                                        vertical: 5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.04),
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        'Zone ${wilayaCode.trim().padLeft(2, '0')}',
-                                        style: TextStyle(
-                                          color: Colors.black.withOpacity(0.72),
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: compact ? 8 : 10),
+                            Text(
+                              _title(),
+                              maxLines: titleLines,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: compact ? 17 : 19,
+                                height: 1.08,
+                                color: Colors.black,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                _priceText(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 18,
-                                  color: Colors.black,
+                            SizedBox(height: compact ? 6 : 8),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                  _descriptionShort(),
+                                  maxLines: descLines,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.black.withOpacity(0.70),
+                                    fontSize: compact ? 12.5 : 13.5,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.35,
+                                  ),
                                 ),
                               ),
                             ),
+                            SizedBox(height: compact ? 8 : 12),
+                            _ratingAndIndice(compact: compact),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _title(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 19,
-                            height: 1.08,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _descriptionShort(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.black.withOpacity(0.70),
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _ratingAndIndice(),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

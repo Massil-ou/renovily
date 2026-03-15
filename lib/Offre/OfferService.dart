@@ -3,11 +3,11 @@ import '../App/HelperService.dart';
 import '../App/Manager.dart';
 import 'DarekModel.dart';
 
-class DarekService {
+class OfferService {
   final Manager _manager;
   final HelperService _helper;
 
-  DarekService(this._manager, this._helper);
+  OfferService(this._manager, this._helper);
 
   static const String pathAll = '/renovily/search/list';
   static const String pathSearch = '/renovily/search/search';

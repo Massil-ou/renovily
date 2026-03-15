@@ -121,6 +121,7 @@ class OfferModel {
   final String metier;
   final bool isPro;
   final String namePro;
+  final String phone;
   final OfferStatus status;
   final int experienceAnnees;
   final int? prix;
@@ -139,6 +140,7 @@ class OfferModel {
     required this.metier,
     required this.isPro,
     required this.namePro,
+    required this.phone,
     required this.status,
     required this.experienceAnnees,
     required this.images,
@@ -161,6 +163,7 @@ class OfferModel {
           json['is_pro'] == 1 ||
           json['is_pro'] == '1',
       namePro: (json['name_pro'] ?? '').toString().trim(),
+      phone: (json['phone'] ?? '').toString().trim(),
       status: OfferStatus.fromJson(json['status']),
       experienceAnnees: json['experience_annees'] is int
           ? json['experience_annees'] as int
@@ -190,6 +193,7 @@ class OfferModel {
       'metier': metier,
       'is_pro': isPro,
       'name_pro': namePro,
+      'phone': phone,
       'status': status.value,
       'experience_annees': experienceAnnees,
       'prix': prix,
@@ -210,6 +214,7 @@ class OfferModel {
     String? metier,
     bool? isPro,
     String? namePro,
+    String? phone,
     OfferStatus? status,
     int? experienceAnnees,
     int? prix,
@@ -228,6 +233,7 @@ class OfferModel {
       metier: metier ?? this.metier,
       isPro: isPro ?? this.isPro,
       namePro: namePro ?? this.namePro,
+      phone: phone ?? this.phone,
       status: status ?? this.status,
       experienceAnnees: experienceAnnees ?? this.experienceAnnees,
       prix: prix ?? this.prix,

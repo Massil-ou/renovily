@@ -3,13 +3,13 @@ import 'package:flutter/foundation.dart' show ValueNotifier, debugPrint;
 import '../App/HelperService.dart';
 import '../App/Manager.dart';
 import 'DarekModel.dart';
-import 'DarekService.dart';
+import 'OfferService.dart';
 
-class DarekManager {
-  final DarekService _service;
+class OffreManager {
+  final OfferService _service;
 
-  DarekManager(Manager manager, HelperService helper)
-      : _service = DarekService(manager, helper);
+  OffreManager(Manager manager, HelperService helper)
+      : _service = OfferService(manager, helper);
 
   final ValueNotifier<List<OfferModel>> annonces =
   ValueNotifier<List<OfferModel>>([]);

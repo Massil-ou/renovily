@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import 'AddDarekManager.dart';
+import '../../Offre/DarekModel.dart';
+import 'AddOfferManager.dart';
 
 class AddOffersView extends StatefulWidget {
   final Manager manager;
@@ -32,6 +33,7 @@ class _AddOffersViewState extends State<AddOffersView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     m.addListener(_onManagerChanged);
+    m.prefillFromCurrentUser();
   }
 
   void _onManagerChanged() {
@@ -56,7 +58,6 @@ class _AddOffersViewState extends State<AddOffersView>
     }
 
     if (m.lastCreatedOffer != null) {
-      final created = m.lastCreatedOffer!;
       m.clearCreatedOffer();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -238,7 +239,7 @@ class _AddOffersViewState extends State<AddOffersView>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Votre compte client peut publier jusqu’à 20 offres. Passez pro pour augmenter cette limite.',
+                  'Votre compte client peut publier jusqu’à 5 offres. Passez pro pour augmenter cette limite.',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.86),
                     fontSize: 13.5,
@@ -294,21 +295,29 @@ class _AddOffersViewState extends State<AddOffersView>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.photo_library_outlined,
                 color: Colors.white,
                 size: 18,
               ),
-              SizedBox(width: 8),
-              Expanded(
+              const SizedBox(width: 8),
+              const Expanded(
                 child: Text(
                   'Photos',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
+                ),
+              ),
+              Text(
+                'Optionnel',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.78),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -353,12 +362,14 @@ class _AddOffersViewState extends State<AddOffersView>
         TextInputType? keyboardType,
         int maxLines = 1,
         String? Function(String?)? validator,
+        List<TextInputFormatter>? inputFormatters,
       }) {
     return TextFormField(
       controller: ctrl,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      inputFormatters: inputFormatters,
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.white,
       decoration: InputDecoration(
@@ -408,6 +419,9 @@ class _AddOffersViewState extends State<AddOffersView>
             width: 1.4,
           ),
         ),
+        errorStyle: const TextStyle(
+          color: Colors.amberAccent,
+        ),
       ),
       items: OfferPriceUnit.values
           .map(
@@ -417,6 +431,10 @@ class _AddOffersViewState extends State<AddOffersView>
         ),
       )
           .toList(),
+      validator: (v) {
+        if (v == null) return 'Unité de prix obligatoire';
+        return null;
+      },
       onChanged: m.setUnit,
     );
   }
@@ -464,36 +482,51 @@ class _AddOffersViewState extends State<AddOffersView>
             ),
             const SizedBox(height: 12),
             _field(
+              m.phoneCtrl,
+              'Numéro de téléphone',
+              keyboardType: TextInputType.phone,
+              validator: (v) {
+                final value = (v ?? '').trim();
+                if (value.isEmpty) return 'Numéro obligatoire';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _field(
               m.experienceCtrl,
               'Années d’expérience',
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              validator: (v) {
+                final value = (v ?? '').trim();
+                if (value.isEmpty) return 'Expérience obligatoire';
+                if (!RegExp(r'^\d+$').hasMatch(value)) {
+                  return 'L’expérience doit contenir uniquement des chiffres';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             _field(
               m.prixCtrl,
               'Prix',
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              validator: (v) {
+                final value = (v ?? '').trim();
+                if (value.isEmpty) return 'Prix obligatoire';
+                if (!RegExp(r'^\d+$').hasMatch(value)) {
+                  return 'Le prix doit contenir uniquement des chiffres';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             _buildUnitDropdown(),
-            const SizedBox(height: 12),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text(
-                'Compte pro',
-                style: TextStyle(color: Colors.white),
-              ),
-              value: m.isPro,
-              activeColor: Colors.white,
-              inactiveThumbColor: Colors.white70,
-              inactiveTrackColor: Colors.white24,
-              onChanged: m.setIsPro,
-            ),
-            const SizedBox(height: 12),
-            _field(
-              m.nameProCtrl,
-              'Nom pro',
-            ),
             const SizedBox(height: 12),
             _field(
               m.descCtrl,

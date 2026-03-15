@@ -9,14 +9,14 @@ import 'package:path/path.dart' as p;
 import '../../App/BaseResponse.dart';
 import '../../App/HelperService.dart';
 import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
-import 'AddDarekManager.dart';
+import '../../Offre/DarekModel.dart';
+import 'AddOfferManager.dart';
 
-class AddDarekService {
+class AddOfferService {
   final Manager _manager;
   final HelperService _auth;
 
-  AddDarekService(this._manager, this._auth);
+  AddOfferService(this._manager, this._auth);
 
   static const String endpoint = '/renovily/offers/add';
 
@@ -55,8 +55,8 @@ class AddDarekService {
     required String wilaya,
     required String commune,
     required String metier,
-    required bool isPro,
     required String namePro,
+    required String phone,
     required int experienceAnnees,
     int? prix,
     OfferPriceUnit? unitePrix,
@@ -72,10 +72,9 @@ class AddDarekService {
         MapEntry('wilaya', wilaya.trim()),
         MapEntry('commune', commune.trim()),
         MapEntry('metier', metier.trim()),
-        MapEntry('is_pro', isPro ? '1' : '0'),
         MapEntry('name_pro', namePro.trim()),
+        MapEntry('phone', phone.trim()),
         MapEntry('experience_annees', experienceAnnees.toString()),
-        MapEntry('status', (status ?? OfferStatus.pending).value),
       ]);
 
       if (prix != null) {
@@ -161,8 +160,9 @@ class AddDarekService {
         wilaya: wilaya.trim(),
         commune: commune.trim(),
         metier: metier.trim(),
-        isPro: isPro,
+        isPro: _manager.currentUser?.isPro == true,
         namePro: namePro.trim(),
+        phone: phone.trim(),
         status: status ?? OfferStatus.pending,
         experienceAnnees: experienceAnnees,
         prix: prix,

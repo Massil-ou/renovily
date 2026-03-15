@@ -1,14 +1,12 @@
-// lib/Views/widgets/DarekCard.dart
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import '../../Darek/DarekModel.dart';
 import '../Adresse/dz_lookup.dart';
 import '../Const.dart';
+import '../Offre/DarekModel.dart';
 
-class DarekCard extends StatefulWidget {
-  const DarekCard({
+class OfferCard extends StatefulWidget {
+  const OfferCard({
     super.key,
     required this.item,
     required this.onTap,
@@ -28,10 +26,10 @@ class DarekCard extends StatefulWidget {
   final void Function(bool locked)? onImageTouchLockScroll;
 
   @override
-  State<DarekCard> createState() => _DarekCardState();
+  State<OfferCard> createState() => _OfferCardState();
 }
 
-class _DarekCardState extends State<DarekCard> {
+class _OfferCardState extends State<OfferCard> {
   final PageController _pageCtrl = PageController();
   int _page = 0;
 
@@ -77,10 +75,15 @@ class _DarekCardState extends State<DarekCard> {
     }
 
     final p = widget.item.prix!.toString();
-    final unit = widget.item.unitePrix?.label ?? '';
+    final rawUnit = (widget.item.unitePrix?.label ?? '').trim();
 
-    if (unit.isNotEmpty) {
-      return '$p DA / $unit';
+    String shortUnit = rawUnit;
+    if (shortUnit.isNotEmpty && shortUnit.length > 3) {
+      shortUnit = shortUnit.substring(0, 3);
+    }
+
+    if (shortUnit.isNotEmpty) {
+      return '$p DA / $shortUnit';
     }
 
     return '$p DA';
@@ -89,8 +92,8 @@ class _DarekCardState extends State<DarekCard> {
   String _descriptionShort() {
     final d = widget.item.description.trim();
     if (d.isEmpty) return 'Professionnel disponible pour vos travaux.';
-    if (d.length <= 90) return d;
-    return '${d.substring(0, 90)}...';
+    if (d.length <= 60) return d;
+    return '${d.substring(0, 60)}...';
   }
 
   double _noteSafe() {
@@ -203,7 +206,7 @@ class _DarekCardState extends State<DarekCard> {
         style: TextStyle(
           color: Colors.blue.shade800,
           fontWeight: FontWeight.w800,
-          fontSize: 11.5,
+          fontSize: 11,
           height: 1.0,
         ),
       ),
@@ -264,7 +267,7 @@ class _DarekCardState extends State<DarekCard> {
   }
 
   Widget _imageSlider({
-    double height = 220,
+    double height = 190,
     BorderRadius? radius,
   }) {
     final effectiveRadius = radius ?? BorderRadius.circular(kRadius);
@@ -278,7 +281,7 @@ class _DarekCardState extends State<DarekCard> {
           alignment: Alignment.center,
           child: Icon(
             Icons.home_repair_service,
-            size: 42,
+            size: 40,
             color: Colors.black.withOpacity(0.45),
           ),
         ),
@@ -329,7 +332,7 @@ class _DarekCardState extends State<DarekCard> {
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.broken_image_outlined,
-                          size: 36,
+                          size: 34,
                           color: Colors.black.withOpacity(0.35),
                         ),
                       ),
@@ -341,7 +344,7 @@ class _DarekCardState extends State<DarekCard> {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                height: 78,
+                height: 72,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -372,7 +375,7 @@ class _DarekCardState extends State<DarekCard> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: 11.5,
+                        fontSize: 11,
                         height: 1.0,
                       ),
                     ),
@@ -416,7 +419,7 @@ class _DarekCardState extends State<DarekCard> {
     );
   }
 
-  Widget _stars(double rating) {
+  Widget _stars(double rating, {double size = 14}) {
     final fullStars = rating.floor();
     final hasHalf = (rating - fullStars) >= 0.5;
 
@@ -436,7 +439,7 @@ class _DarekCardState extends State<DarekCard> {
           padding: const EdgeInsets.only(right: 1),
           child: Icon(
             icon,
-            size: 16,
+            size: size,
             color: const Color(0xFFF5B301),
           ),
         );
@@ -450,10 +453,10 @@ class _DarekCardState extends State<DarekCard> {
     final indiceProgress = ((indice - 1.0) / 9.0).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.black.withOpacity(0.06),
         ),
@@ -464,33 +467,35 @@ class _DarekCardState extends State<DarekCard> {
           Row(
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   note.toStringAsFixed(1),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _stars(note),
+                    _stars(note, size: 14),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.item.nbAvis} avis',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 11.5,
                         color: Colors.black.withOpacity(0.64),
                         fontWeight: FontWeight.w700,
                       ),
@@ -498,14 +503,14 @@ class _DarekCardState extends State<DarekCard> {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     '${indice.toStringAsFixed(1)}/10',
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 13,
                       fontWeight: FontWeight.w900,
                       color: Colors.black,
                     ),
@@ -513,7 +518,7 @@ class _DarekCardState extends State<DarekCard> {
                   Text(
                     'Finition',
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 10.5,
                       color: Colors.black.withOpacity(0.54),
                       fontWeight: FontWeight.w700,
                     ),
@@ -522,17 +527,39 @@ class _DarekCardState extends State<DarekCard> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
-              minHeight: 8,
+              minHeight: 6,
               value: indiceProgress,
               backgroundColor: const Color(0xFFE7EDF4),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _chip(String text) {
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.black.withOpacity(0.72),
+            fontWeight: FontWeight.w800,
+            fontSize: 10.5,
+          ),
+        ),
       ),
     );
   }
@@ -574,7 +601,7 @@ class _DarekCardState extends State<DarekCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _imageSlider(
-                  height: 220,
+                  height: 190,
                   radius: const BorderRadius.only(
                     topLeft: Radius.circular(22),
                     topRight: Radius.circular(22),
@@ -582,100 +609,76 @@ class _DarekCardState extends State<DarekCard> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
+                              child: Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 9,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.04),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Text(
-                                      widget.item.metier.trim().isEmpty
-                                          ? 'Service'
-                                          : widget.item.metier.trim(),
-                                      style: TextStyle(
-                                        color: Colors.black.withOpacity(0.72),
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 11,
-                                      ),
-                                    ),
+                                  _chip(
+                                    widget.item.metier.trim().isEmpty
+                                        ? 'Service'
+                                        : widget.item.metier.trim(),
                                   ),
-                                  if (wilayaCode != null && wilayaCode.trim().isNotEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 9,
-                                        vertical: 5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.04),
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        'Zone ${wilayaCode.trim().padLeft(2, '0')}',
-                                        style: TextStyle(
-                                          color: Colors.black.withOpacity(0.72),
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 11,
-                                        ),
-                                      ),
+                                  if (wilayaCode != null &&
+                                      wilayaCode.trim().isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    _chip(
+                                      'Zone ${wilayaCode.trim().padLeft(2, '0')}',
                                     ),
+                                  ],
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                _priceText(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 18,
-                                  color: Colors.black,
+                            const SizedBox(width: 8),
+                            SizedBox(
+                              width: 118,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _priceText(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Text(
                           _title(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
-                            fontSize: 19,
+                            fontSize: 17,
                             height: 1.08,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           _descriptionShort(),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.black.withOpacity(0.70),
-                            fontSize: 13.5,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w500,
-                            height: 1.4,
+                            height: 1.25,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         _ratingAndIndice(),
                       ],
                     ),

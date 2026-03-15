@@ -2,14 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../Auth/Login/LoginView.dart';
-import '../Card/DarekCardResp.dart';
+import '../Card/OfferCardResp.dart';
 import '../Const.dart';
-import '../DarekDetails/DarekDetailView.dart';
 import '../App/Manager.dart';
 import '../Dashboard/LanguageService.dart';
+import '../Dashboard/OfferDetail/OfferDetailView.dart';
 import '../Menu/filters_drawer.dart';
 import '../Shared/GlassWidgets.dart';
-import '../Darek/DarekModel.dart';
+import 'DarekModel.dart';
 
 class DarekView extends StatelessWidget {
   final Manager manager;
@@ -169,7 +169,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
   void _openDetails(OfferModel item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DarekDetailView(
+        builder: (_) => OfferDetailView(
           manager: widget.manager,
           item: item,
         ),
@@ -193,9 +193,9 @@ class _DarekMobileViewState extends State<DarekMobileView> {
   }
 
   double _cardHeight(double width) {
-    if (width >= 1320) return 440;
-    if (width >= 1120) return 425;
-    if (width >= 900) return 415;
+    if (width >= 1320) return 455;
+    if (width >= 1120) return 445;
+    if (width >= 900) return 438;
     if (width >= 720) return 460;
     if (width >= 520) return 450;
     return 440;
@@ -210,7 +210,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
 
   double _heroHeightForWidth(double width) {
     if (_isMobile(width)) return 400;
-    return 460;
+    return 320;
   }
 
   double _listOverlapForWidth(double width) {
@@ -376,7 +376,7 @@ class _DarekMobileViewState extends State<DarekMobileView> {
                                 ),
                                 itemBuilder: (_, index) {
                                   final item = items[index];
-                                  return DarekCardResp(
+                                  return OfferCardResp(
                                     item: item,
                                     shadow: false,
                                     onTap: () => _openDetails(item),

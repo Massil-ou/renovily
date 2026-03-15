@@ -2,9 +2,8 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import '../../Darek/DarekModel.dart';
-import '../Card/DarekCard.dart';
+import '../Card/OfferCard.dart';
+import '../Offre/DarekModel.dart';
 
 class HorizontalDarek extends StatefulWidget {
   final List<OfferModel> items;
@@ -37,7 +36,7 @@ class _HorizontalDarekState extends State<HorizontalDarek> {
 
   static const double _itemWidth = 320.0;
   static const double _spacing = 12.0;
-  static const double _stripHeight = 450.0;
+  static const double _stripHeight = 390.0;
 
   bool _canScrollLeft = false;
   bool _canScrollRight = false;
@@ -209,7 +208,7 @@ class _HorizontalDarekState extends State<HorizontalDarek> {
                     final item = items[i];
                     return SizedBox(
                       width: _itemWidth,
-                      child: DarekCard(
+                      child: OfferCard(
                         item: item,
                         onTap: () => widget.onTap(item),
                         shadow: widget.shadow,

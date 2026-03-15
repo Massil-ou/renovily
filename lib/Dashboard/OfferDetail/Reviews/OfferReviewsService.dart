@@ -1,7 +1,7 @@
-import '../../App/BaseResponse.dart';
-import '../../App/HelperService.dart';
-import '../../App/Manager.dart';
-import '../../Darek/DarekModel.dart';
+import '../../../App/BaseResponse.dart';
+import '../../../App/HelperService.dart';
+import '../../../App/Manager.dart';
+import '../../../Offre/DarekModel.dart';
 
 class OfferReviewsService {
   final Manager _manager;
@@ -14,7 +14,6 @@ class OfferReviewsService {
 
   Future<BaseResponse<OfferReviews?>> addReview({
     required String idoffer,
-    required String prenom,
     required String message,
     required int note,
     required double indiceFinition,
@@ -22,8 +21,7 @@ class OfferReviewsService {
     final res = await _helper.postTyped<dynamic>(
       addEndpoint,
       data: {
-        'idoffer': idoffer,
-        'prenom': prenom.trim(),
+        'idoffer': idoffer.trim(),
         'message': message.trim(),
         'note': note,
         'indice_finition': indiceFinition,
@@ -63,7 +61,7 @@ class OfferReviewsService {
     final res = await _helper.postTyped<dynamic>(
       deleteEndpoint,
       data: {
-        'idreview': idreview,
+        'idreview': idreview.trim(),
       },
       parse: null,
     );

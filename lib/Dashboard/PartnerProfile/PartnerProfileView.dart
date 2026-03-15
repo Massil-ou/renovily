@@ -251,9 +251,8 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: ui.bg,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -262,8 +261,8 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
           const SizedBox(width: 8),
           Text(
             ui.label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: ui.color,
               fontWeight: FontWeight.w800,
               fontSize: 12.5,
             ),
@@ -317,21 +316,60 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
 
   Widget _buildHeader(WinyCar s) {
     final has = _hasProfile;
+    final status = _statusKey();
 
     return _glassContainer(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              s.proProfileTitle,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  s.proProfileTitle,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              if (has) _statusPill(s),
+            ],
+          ),
+          if (has && status == 'pending') ...[
+            const SizedBox(height: 10),
+            Text(
+              'Votre demande est en attente de validation.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.86),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-          if (has) _statusPill(s),
+          ],
+          if (has && status == 'verified') ...[
+            const SizedBox(height: 10),
+            Text(
+              'Votre profil professionnel est validé.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.86),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          if (has && status == 'rejected') ...[
+            const SizedBox(height: 10),
+            Text(
+              'Votre demande a été refusée. Vous pouvez corriger vos informations.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.86),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -498,7 +536,9 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
             'rc_number': _rc.text.trim().isEmpty ? null : _rc.text.trim(),
             'nif_number': _nif.text.trim().isEmpty ? null : _nif.text.trim(),
             'nis_number': _nis.text.trim().isEmpty ? null : _nis.text.trim(),
-            'tax_regime': _tax.text.trim().isEmpty ? null : _tax.text.trim(),
+            'tax_regime': _tax.text.trim().isEmpty
+                ? null
+                : _tax.text.trim(),
             'vat_number': vatNum,
           };
 
