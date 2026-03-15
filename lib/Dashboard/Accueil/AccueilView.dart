@@ -229,7 +229,7 @@ class _AccueilViewState extends State<AccueilView> {
               padding: const EdgeInsets.fromLTRB(kGutter, 12, kGutter, 12),
               child: Column(
                 children: [
-                  if (_isMobile(width)) const SizedBox(height: 56),
+                  if (_isMobile(width)) const SizedBox(height: 0),
                   Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(

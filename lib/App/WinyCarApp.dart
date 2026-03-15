@@ -196,7 +196,7 @@ class _TomobilAppState extends State<TomobilApp> {
     return MaterialApp.router(
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
-      title: 'Tomobil',
+      title: 'Renovi',
       theme: ThemeData(useMaterial3: false),
     );
   }
