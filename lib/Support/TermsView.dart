@@ -28,7 +28,7 @@ class _TermsViewState extends State<TermsView> {
     return ValueListenableBuilder<AppLanguage>(
       valueListenable: widget.manager.languageService.language,
       builder: (_, __, ___) {
-        final WinyCar s = widget.manager.winyCarTranslation;
+        final Renovily s = widget.manager.renovilyTranslation;
 
         final isMobile = true;
 
@@ -54,7 +54,7 @@ class _TermsViewState extends State<TermsView> {
     );
   }
 
-  Widget _content(WinyCar s, {required bool isMobile}) {
+  Widget _content(Renovily s, {required bool isMobile}) {
     return Scrollbar(
       controller: _scrollCtrl,
       thumbVisibility: true,
@@ -127,7 +127,7 @@ class _TermsViewState extends State<TermsView> {
     );
   }
 
-  Widget _termsBody(WinyCar s) {
+  Widget _termsBody(Renovily s) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

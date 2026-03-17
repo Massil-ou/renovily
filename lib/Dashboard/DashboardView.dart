@@ -110,7 +110,7 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Future<void> _confirmAndSignOut() async {
-    final WinyCar s = widget.manager.winyCarTranslation;
+    final Renovily s = widget.manager.renovilyTranslation;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -148,7 +148,7 @@ class _DashboardViewState extends State<DashboardView> {
     return ValueListenableBuilder<AppLanguage>(
       valueListenable: widget.manager.languageService.language,
       builder: (_, __, ___) {
-        final WinyCar s = widget.manager.winyCarTranslation;
+        final Renovily s = widget.manager.renovilyTranslation;
 
         return WillPopScope(
           onWillPop: _preventPop,
@@ -166,7 +166,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  PreferredSizeWidget _buildMobileAppBar(WinyCar s) {
+  PreferredSizeWidget _buildMobileAppBar(Renovily s) {
     final double w = MediaQuery.of(context).size.width;
     final bool isMobile = w <= 600;
 
@@ -193,8 +193,8 @@ class _DashboardViewState extends State<DashboardView> {
       )
           : null,
       title: isMobile
-          ? _GlassTitlePill(onTap: _goHome)
-          : _GlassTitlePill(onTap: _goHome),
+          ? _GlassTitlePill(manager: widget.manager, onTap: _goHome)
+          : _GlassTitlePill(manager: widget.manager, onTap: _goHome),
       actions: [
         Center(
           child: SizedBox(
@@ -216,7 +216,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildEndDrawer(WinyCar s) {
+  Widget _buildEndDrawer(Renovily s) {
     return Drawer(
       width: 320,
       backgroundColor: Colors.transparent,
@@ -276,9 +276,9 @@ class _DashboardViewState extends State<DashboardView> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  const Text(
-                                    'Renovily',
-                                    style: TextStyle(
+                                  Text(
+                                    s.appName,
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 18,
@@ -337,7 +337,7 @@ class _DashboardViewState extends State<DashboardView> {
                           icon: Icons.campaign_outlined,
                           selectedIcon: Icons.campaign,
                           selected: _isMyAdsSelected,
-                          label: 'Mes annonces',
+                          label: s.myAds,
                           onTap: () {
                             Navigator.of(context).pop();
                             _goMyAds();
@@ -386,7 +386,7 @@ class _DashboardViewState extends State<DashboardView> {
 }
 
 class _LogoutDialog extends StatelessWidget {
-  final WinyCar s;
+  final Renovily s;
 
   const _LogoutDialog({required this.s});
 
@@ -493,12 +493,15 @@ class _LogoutDialog extends StatelessWidget {
 }
 
 class _GlassTitlePill extends StatelessWidget {
+  final Manager manager;
   final VoidCallback? onTap;
 
-  const _GlassTitlePill({this.onTap});
+  const _GlassTitlePill({required this.manager, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -521,9 +524,9 @@ class _GlassTitlePill extends StatelessWidget {
                   width: 0.8,
                 ),
               ),
-              child: const Text(
-                'Renovily',
-                style: TextStyle(
+              child: Text(
+                s.appName,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 18,

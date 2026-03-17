@@ -33,7 +33,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     return ValueListenableBuilder<AppLanguage>(
       valueListenable: widget.manager.languageService.language,
       builder: (_, __, ___) {
-        final WinyCar s = widget.manager.winyCarTranslation;
+        final Renovily s = widget.manager.renovilyTranslation;
 
         final isMobile = true;
 
@@ -59,7 +59,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     );
   }
 
-  Widget _content(WinyCar s, {required bool isMobile}) {
+  Widget _content(Renovily s, {required bool isMobile}) {
     return Scrollbar(
       controller: _scrollCtrl,
       thumbVisibility: true,
@@ -123,7 +123,6 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
                     label: s.support,
                     onTap: () => goNamedAfterFrame(context, 'support'),
                   ),
-                  // ✅ SUPPRIMÉ : bouton Accueil/Home
                 ],
               ),
             ),
@@ -133,7 +132,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     );
   }
 
-  Widget _privacyBody(WinyCar s) {
+  Widget _privacyBody(Renovily s) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

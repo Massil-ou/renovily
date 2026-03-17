@@ -79,7 +79,7 @@ class _ClientProfileViewState extends State<ClientProfileView> {
   }) async {
     if (!mounted) return;
 
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     await showDialog<void>(
       context: context,
@@ -183,7 +183,7 @@ class _ClientProfileViewState extends State<ClientProfileView> {
   }
 
   Future<void> _save() async {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     if (!_formKey.currentState!.validate()) return;
 
@@ -216,7 +216,7 @@ class _ClientProfileViewState extends State<ClientProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -241,7 +241,7 @@ class _ClientProfileViewState extends State<ClientProfileView> {
     );
   }
 
-  Widget _buildHeader(WinyCar s) {
+  Widget _buildHeader(Renovily s) {
     return _glassContainer(
       child: Row(
         children: [
@@ -260,43 +260,64 @@ class _ClientProfileViewState extends State<ClientProfileView> {
     );
   }
 
-  Widget _buildForm(WinyCar s) {
+  Widget _buildForm(Renovily s) {
     return _glassContainer(
       child: Form(
         key: _formKey,
         child: Column(
           children: [
-            _field(_firstName, s.firstName, _editMode,
-                required: true,
-                textCapitalization: TextCapitalization.words),
+            _field(
+              _firstName,
+              s.firstName,
+              _editMode,
+              required: true,
+              requiredMessage: s.requiredField,
+              textCapitalization: TextCapitalization.words,
+            ),
             const SizedBox(height: 12),
-            _field(_lastName, s.lastName, _editMode,
-                required: true,
-                textCapitalization: TextCapitalization.words),
+            _field(
+              _lastName,
+              s.lastName,
+              _editMode,
+              required: true,
+              requiredMessage: s.requiredField,
+              textCapitalization: TextCapitalization.words,
+            ),
             const SizedBox(height: 12),
             _field(
               _number,
               s.phoneNumber,
               _editMode,
               required: true,
+              requiredMessage: s.requiredField,
               keyboard: TextInputType.phone,
               formatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: 12),
-            _field(_wilaya, s.wilaya, _editMode,
-                required: true,
-                textCapitalization: TextCapitalization.words),
+            _field(
+              _wilaya,
+              s.wilaya,
+              _editMode,
+              required: true,
+              requiredMessage: s.requiredField,
+              textCapitalization: TextCapitalization.words,
+            ),
             const SizedBox(height: 12),
-            _field(_commune, s.commune, _editMode,
-                required: true,
-                textCapitalization: TextCapitalization.words),
+            _field(
+              _commune,
+              s.commune,
+              _editMode,
+              required: true,
+              requiredMessage: s.requiredField,
+              textCapitalization: TextCapitalization.words,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActions(WinyCar s) {
+  Widget _buildActions(Renovily s) {
     if (!_editMode) {
       return SizedBox(
         height: 54,
@@ -351,6 +372,7 @@ class _ClientProfileViewState extends State<ClientProfileView> {
       String label,
       bool enabled, {
         bool required = false,
+        String? requiredMessage,
         TextInputType? keyboard,
         List<TextInputFormatter>? formatters,
         TextCapitalization textCapitalization = TextCapitalization.none,
@@ -383,7 +405,8 @@ class _ClientProfileViewState extends State<ClientProfileView> {
         contentPadding: const EdgeInsets.only(bottom: 6),
       ),
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+          ? (v) =>
+      (v == null || v.trim().isEmpty) ? (requiredMessage ?? 'Required') : null
           : null,
     );
   }

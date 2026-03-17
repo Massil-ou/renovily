@@ -41,6 +41,8 @@ class _AddOffersViewState extends State<AddOffersView>
 
     setState(() {});
 
+    final s = widget.manager.renovilyTranslation;
+
     if (m.lastError != null) {
       final err = m.lastError!;
       m.clearError();
@@ -48,7 +50,7 @@ class _AddOffersViewState extends State<AddOffersView>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showGlassDialog(
-          title: 'Erreur',
+          title: s.error,
           message: _mapErrorMessage(err),
           icon: Icons.error_outline,
           iconBg: const Color(0xFFFFE5E5),
@@ -63,8 +65,8 @@ class _AddOffersViewState extends State<AddOffersView>
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
         await _showGlassDialog(
-          title: 'Offre publiée',
-          message: 'Votre offre a bien été publiée.',
+          title: s.offerPublished,
+          message: s.offerPublishedSuccess,
           icon: Icons.check_circle_outline,
           iconBg: const Color(0xFFE8F7EC),
           iconColor: Colors.green,
@@ -76,13 +78,15 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   String _mapErrorMessage(String code) {
+    final s = widget.manager.renovilyTranslation;
+
     switch (code) {
       case 'network_error':
-        return 'Impossible de communiquer avec le serveur.';
+        return s.serverCommunicationImpossible;
       case 'add_offer_failed':
-        return 'Impossible de publier cette offre.';
+        return s.offerPublishImpossible;
       case 'exception':
-        return 'Une erreur inattendue est survenue.';
+        return s.unexpectedErrorOccurred;
       default:
         return code;
     }
@@ -99,6 +103,8 @@ class _AddOffersViewState extends State<AddOffersView>
     Color iconBg = const Color(0xFFEAF3FF),
     Color iconColor = Colors.blueAccent,
   }) async {
+    final s = widget.manager.renovilyTranslation;
+
     if (!mounted) return;
 
     await showDialog<void>(
@@ -108,7 +114,7 @@ class _AddOffersViewState extends State<AddOffersView>
       builder: (_) => _GlassInfoDialog(
         title: title,
         message: message,
-        okText: 'OK',
+        okText: s.ok,
         icon: icon,
         iconBg: iconBg,
         iconColor: iconColor,
@@ -153,6 +159,8 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Future<void> _choosePhotoSource() async {
+    final s = widget.manager.renovilyTranslation;
+
     if (m.remainingPhotos <= 0) return;
 
     await showModalBottomSheet(
@@ -164,7 +172,7 @@ class _AddOffersViewState extends State<AddOffersView>
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Galerie'),
+                title: Text(s.gallery),
                 onTap: () async {
                   Navigator.pop(context);
                   await _pickFromGallery();
@@ -172,7 +180,7 @@ class _AddOffersViewState extends State<AddOffersView>
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('Caméra'),
+                title: Text(s.camera),
                 onTap: () async {
                   Navigator.pop(context);
                   await _takePhoto();
@@ -206,6 +214,8 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Widget _buildLimitInfo() {
+    final s = widget.manager.renovilyTranslation;
+
     return _glassContainer(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,9 +239,9 @@ class _AddOffersViewState extends State<AddOffersView>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Limite d’offres',
-                  style: TextStyle(
+                Text(
+                  s.offerLimit,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
@@ -239,7 +249,7 @@ class _AddOffersViewState extends State<AddOffersView>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Votre compte client peut publier jusqu’à 5 offres. Passez pro pour augmenter cette limite.',
+                  s.clientOfferLimitInfo,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.86),
                     fontSize: 13.5,
@@ -291,6 +301,8 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Widget _buildPhotos() {
+    final s = widget.manager.renovilyTranslation;
+
     return _glassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,17 +315,17 @@ class _AddOffersViewState extends State<AddOffersView>
                 size: 18,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Photos',
-                  style: TextStyle(
+                  s.photos,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
               Text(
-                'Optionnel',
+                s.optional,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.78),
                   fontSize: 12,
@@ -397,13 +409,15 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Widget _buildUnitDropdown() {
+    final s = widget.manager.renovilyTranslation;
+
     return DropdownButtonFormField<OfferPriceUnit>(
       value: m.selectedUnit,
       dropdownColor: const Color(0xFF1E1E1E),
       style: const TextStyle(color: Colors.white),
       iconEnabledColor: Colors.white,
       decoration: InputDecoration(
-        labelText: 'Unité de prix',
+        labelText: s.priceUnit,
         labelStyle: const TextStyle(
           color: Colors.white70,
           fontSize: 13,
@@ -432,7 +446,7 @@ class _AddOffersViewState extends State<AddOffersView>
       )
           .toList(),
       validator: (v) {
-        if (v == null) return 'Unité de prix obligatoire';
+        if (v == null) return s.priceUnitRequired;
         return null;
       },
       onChanged: m.setUnit,
@@ -440,6 +454,8 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Widget _buildForm() {
+    final s = widget.manager.renovilyTranslation;
+
     return _glassContainer(
       child: Form(
         key: _formKey,
@@ -447,63 +463,63 @@ class _AddOffersViewState extends State<AddOffersView>
           children: [
             _field(
               m.titreCtrl,
-              'Titre',
+              s.title,
               validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Titre obligatoire';
+                if ((v ?? '').trim().isEmpty) return s.titleRequired;
                 return null;
               },
             ),
             const SizedBox(height: 12),
             _field(
               m.metierCtrl,
-              'Métier',
+              s.job,
               validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Métier obligatoire';
+                if ((v ?? '').trim().isEmpty) return s.jobRequired;
                 return null;
               },
             ),
             const SizedBox(height: 12),
             _field(
               m.wilayaCtrl,
-              'Wilaya',
+              s.wilaya,
               validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Wilaya obligatoire';
+                if ((v ?? '').trim().isEmpty) return s.wilayaRequired;
                 return null;
               },
             ),
             const SizedBox(height: 12),
             _field(
               m.communeCtrl,
-              'Commune',
+              s.commune,
               validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Commune obligatoire';
+                if ((v ?? '').trim().isEmpty) return s.communeRequired;
                 return null;
               },
             ),
             const SizedBox(height: 12),
             _field(
               m.phoneCtrl,
-              'Numéro de téléphone',
+              s.phoneNumber,
               keyboardType: TextInputType.phone,
               validator: (v) {
                 final value = (v ?? '').trim();
-                if (value.isEmpty) return 'Numéro obligatoire';
+                if (value.isEmpty) return s.phoneRequired;
                 return null;
               },
             ),
             const SizedBox(height: 12),
             _field(
               m.experienceCtrl,
-              'Années d’expérience',
+              s.yearsExperience,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
               ],
               validator: (v) {
                 final value = (v ?? '').trim();
-                if (value.isEmpty) return 'Expérience obligatoire';
+                if (value.isEmpty) return s.experienceRequired;
                 if (!RegExp(r'^\d+$').hasMatch(value)) {
-                  return 'L’expérience doit contenir uniquement des chiffres';
+                  return s.experienceDigitsOnly;
                 }
                 return null;
               },
@@ -511,16 +527,16 @@ class _AddOffersViewState extends State<AddOffersView>
             const SizedBox(height: 12),
             _field(
               m.prixCtrl,
-              'Prix',
+              s.price,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
               ],
               validator: (v) {
                 final value = (v ?? '').trim();
-                if (value.isEmpty) return 'Prix obligatoire';
+                if (value.isEmpty) return s.priceRequired;
                 if (!RegExp(r'^\d+$').hasMatch(value)) {
-                  return 'Le prix doit contenir uniquement des chiffres';
+                  return s.priceDigitsOnly;
                 }
                 return null;
               },
@@ -530,10 +546,10 @@ class _AddOffersViewState extends State<AddOffersView>
             const SizedBox(height: 12),
             _field(
               m.descCtrl,
-              'Description',
+              s.description,
               maxLines: 5,
               validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Description obligatoire';
+                if ((v ?? '').trim().isEmpty) return s.descriptionRequired;
                 return null;
               },
             ),
@@ -549,6 +565,8 @@ class _AddOffersViewState extends State<AddOffersView>
   }
 
   Widget _buildActions() {
+    final s = widget.manager.renovilyTranslation;
+
     return SizedBox(
       height: 54,
       child: ElevatedButton(
@@ -568,9 +586,9 @@ class _AddOffersViewState extends State<AddOffersView>
             color: Colors.black,
           ),
         )
-            : const Text(
-          'Publier',
-          style: TextStyle(
+            : Text(
+          s.publish,
+          style: const TextStyle(
             fontWeight: FontWeight.w800,
             color: Colors.black,
           ),

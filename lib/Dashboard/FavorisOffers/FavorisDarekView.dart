@@ -34,6 +34,8 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
 
     setState(() {});
 
+    final s = widget.manager.renovilyTranslation;
+
     if (m.lastError != null) {
       final err = m.lastError!;
       m.lastError = null;
@@ -41,7 +43,7 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showGlassDialog(
-          title: 'Erreur',
+          title: s.error,
           message: _mapErrorMessage(err),
           icon: Icons.error_outline,
           iconBg: const Color(0xFFFFE5E5),
@@ -58,13 +60,15 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
   }
 
   String _mapErrorMessage(String code) {
+    final s = widget.manager.renovilyTranslation;
+
     switch (code) {
       case 'add_failed':
-        return 'Impossible d’ajouter cette annonce aux favoris.';
+        return s.addFavoriteFailed;
       case 'delete_failed':
-        return 'Impossible de retirer cette annonce des favoris.';
+        return s.removeFavoriteFailed;
       case 'exception':
-        return 'Une erreur est survenue lors de la communication avec le serveur.';
+        return s.serverCommunicationError;
       default:
         return code;
     }
@@ -77,6 +81,8 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
     Color iconBg = const Color(0xFFEAF3FF),
     Color iconColor = Colors.blueAccent,
   }) async {
+    final s = widget.manager.renovilyTranslation;
+
     if (!mounted) return;
 
     await showDialog<void>(
@@ -86,7 +92,7 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
       builder: (_) => _GlassInfoDialog(
         title: title,
         message: message,
-        okText: 'OK',
+        okText: s.ok,
         icon: icon,
         iconBg: iconBg,
         iconColor: iconColor,
@@ -99,26 +105,32 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => const _DeleteFavoriDialog(),
+      builder: (_) => _DeleteFavoriDialog(
+        manager: widget.manager,
+      ),
     );
 
     return result == true;
   }
 
   String _price(OfferModel a) {
-    if (a.prix == null) return 'Prix à négocier';
+    final s = widget.manager.renovilyTranslation;
+
+    if (a.prix == null) return s.priceNegotiable;
     final unit = (a.unitePrix?.value ?? '').trim();
     if (unit.isEmpty) return "${a.prix!.toStringAsFixed(0)} DA";
     return "${a.prix!.toStringAsFixed(0)} DA / $unit";
   }
 
   String _subtitle(OfferModel a) {
+    final s = widget.manager.renovilyTranslation;
+
     final parts = <String>[
       if (a.metier.trim().isNotEmpty) a.metier.trim(),
       if (a.wilaya.trim().isNotEmpty) a.wilaya.trim(),
       if (a.commune.trim().isNotEmpty) a.commune.trim(),
     ];
-    return parts.isEmpty ? '-' : parts.join(' • ');
+    return parts.isEmpty ? s.notAvailableShort : parts.join(' • ');
   }
 
   Future<void> _deleteFavori(OfferModel item) async {
@@ -141,12 +153,14 @@ class _FavorisOffersViewState extends State<FavorisOffersView> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        const PageHeader(
-          title: 'Favoris',
-          subtitle: 'Retrouvez vos annonces sauvegardées',
+        PageHeader(
+          title: s.favorites,
+          subtitle: s.savedOffersSubtitle,
         ),
         if (m.isLoading)
           const Padding(
@@ -348,6 +362,11 @@ class _EmptyFavorisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = (context.findAncestorStateOfType<_FavorisOffersViewState>()!)
+        .widget
+        .manager
+        .renovilyTranslation;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
@@ -362,27 +381,27 @@ class _EmptyFavorisCard extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: const Column(
+          child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.favorite_border,
                 color: Colors.white,
                 size: 36,
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                'Aucun favori',
-                style: TextStyle(
+                s.noFavorites,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
-                'Vos annonces sauvegardées apparaîtront ici.',
+                s.savedOffersAppearHere,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 13,
                 ),
@@ -396,10 +415,16 @@ class _EmptyFavorisCard extends StatelessWidget {
 }
 
 class _DeleteFavoriDialog extends StatelessWidget {
-  const _DeleteFavoriDialog();
+  final Manager manager;
+
+  const _DeleteFavoriDialog({
+    required this.manager,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -436,10 +461,10 @@ class _DeleteFavoriDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Retirer des favoris',
-                        style: TextStyle(
+                        s.removeFromFavorites,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
                           color: Colors.black,
@@ -449,9 +474,9 @@ class _DeleteFavoriDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Voulez-vous vraiment retirer cette annonce de vos favoris ?',
-                  style: TextStyle(
+                Text(
+                  s.confirmRemoveFavorite,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black87,
                   ),
@@ -471,7 +496,7 @@ class _DeleteFavoriDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Annuler'),
+                        child: Text(s.cancel),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -486,7 +511,7 @@ class _DeleteFavoriDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Supprimer'),
+                        child: Text(s.delete),
                       ),
                     ),
                   ],

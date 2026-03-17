@@ -479,12 +479,12 @@ class _DarekMobileViewState extends State<DarekMobileView> {
               const Spacer(),
               GlassCircleLanguageButton(
                 manager: widget.manager,
-                tooltip: widget.manager.winyCarTranslation.language,
+                tooltip: widget.manager.renovilyTranslation.language,
               ),
               const SizedBox(width: 8),
               GlassCircleIconButton(
                 icon: Icons.person_outline,
-                tooltip: widget.manager.winyCarTranslation.myAccount,
+                tooltip: widget.manager.renovilyTranslation.myAccount,
                 onTap: _openAuthDialog,
               ),
             ],

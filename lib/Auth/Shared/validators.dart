@@ -6,7 +6,7 @@ String? emailValidator(
   String? msgRequired,
   String? msgInvalid,
 }) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   final requiredMsg = msgRequired ?? s.emailRequired;
   final invalidMsg = msgInvalid ?? s.emailInvalid;
@@ -21,7 +21,7 @@ String? passwordValidator(
   int min = 8,
   String? msgRequired,
 }) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final requiredMsg = msgRequired ?? s.passwordRequired;
   final t = v ?? '';
 
@@ -33,7 +33,7 @@ String? passwordValidator(
 }
 
 String? otpValidator(Manager manager, String? v, {int len = 6, String? msg}) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.codeRequired;
   final invalidMsg = msg ?? s.codeInvalid;
@@ -43,7 +43,7 @@ String? otpValidator(Manager manager, String? v, {int len = 6, String? msg}) {
 }
 
 String? phoneFrValidator(Manager manager, String? v) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.phoneRequired ?? s.required;
   if (!RegExp(r'^0\d{9}$').hasMatch(t)) return s.phoneFrInvalid;
@@ -51,7 +51,7 @@ String? phoneFrValidator(Manager manager, String? v) {
 }
 
 String? phoneDzValidator(Manager manager, String? v) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.phoneRequired ?? s.required;
   final ok = RegExp(r'^(?:0[5-7]\d{8}|\+213[5-7]\d{8})$').hasMatch(t);
@@ -59,7 +59,7 @@ String? phoneDzValidator(Manager manager, String? v) {
 }
 
 String? yearValidator(Manager manager, String? v) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.required;
   final y = int.tryParse(t);
@@ -74,7 +74,7 @@ String? intValidator(
   String? msg,
   bool allowZero = true,
 }) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.required;
   final n = int.tryParse(t);
@@ -86,7 +86,7 @@ String? intValidator(
 }
 
 String? priceValidator(Manager manager, String? v) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').replaceAll(' ', '').replaceAll(',', '.');
   if (t.isEmpty) return s.required;
   final n = double.tryParse(t);
@@ -95,7 +95,7 @@ String? priceValidator(Manager manager, String? v) {
 }
 
 String? matriculeDzValidator(Manager manager, String? v) {
-  final s = manager.winyCarTranslation;
+  final s = manager.renovilyTranslation;
   final t = (v ?? '').trim();
   if (t.isEmpty) return s.required;
   return null;

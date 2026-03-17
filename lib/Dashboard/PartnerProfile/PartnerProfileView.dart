@@ -92,7 +92,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
   }) async {
     if (!mounted) return;
 
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     await showDialog<void>(
       context: context,
@@ -216,12 +216,12 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     return 'pending';
   }
 
-  ({String label, IconData icon, Color color, Color bg}) _statusUi(WinyCar s) {
+  ({String label, IconData icon, Color color, Color bg}) _statusUi(Renovily s) {
     final k = _statusKey();
 
     if (k == 'verified') {
       return (
-      label: 'Verified',
+      label: s.verified,
       icon: Icons.verified_rounded,
       color: Colors.green,
       bg: const Color(0xFFE8F5E9),
@@ -230,7 +230,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
 
     if (k == 'rejected') {
       return (
-      label: 'Rejected',
+      label: s.rejected,
       icon: Icons.cancel_rounded,
       color: Colors.redAccent,
       bg: const Color(0xFFFFEBEE),
@@ -238,14 +238,14 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     }
 
     return (
-    label: 'Pending',
+    label: s.pending,
     icon: Icons.hourglass_top_rounded,
     color: Colors.orange,
     bg: const Color(0xFFFFF3E0),
     );
   }
 
-  Widget _statusPill(WinyCar s) {
+  Widget _statusPill(Renovily s) {
     final ui = _statusUi(s);
 
     return Container(
@@ -274,7 +274,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -314,7 +314,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     );
   }
 
-  Widget _buildHeader(WinyCar s) {
+  Widget _buildHeader(Renovily s) {
     final has = _hasProfile;
     final status = _statusKey();
 
@@ -340,7 +340,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
           if (has && status == 'pending') ...[
             const SizedBox(height: 10),
             Text(
-              'Votre demande est en attente de validation.',
+              s.proStatusPendingMessage,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.86),
                 fontSize: 13,
@@ -351,7 +351,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
           if (has && status == 'verified') ...[
             const SizedBox(height: 10),
             Text(
-              'Votre profil professionnel est validé.',
+              s.proStatusVerifiedMessage,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.86),
                 fontSize: 13,
@@ -362,7 +362,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
           if (has && status == 'rejected') ...[
             const SizedBox(height: 10),
             Text(
-              'Votre demande a été refusée. Vous pouvez corriger vos informations.',
+              s.proStatusRejectedMessage,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.86),
                 fontSize: 13,
@@ -375,7 +375,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     );
   }
 
-  Widget _buildForm(WinyCar s) {
+  Widget _buildForm(Renovily s) {
     final enabled = _formEnabled;
 
     return _glassContainer(
@@ -428,7 +428,7 @@ class _PartnerProfileContentState extends State<PartnerProfileView>
     );
   }
 
-  Widget _buildActions(WinyCar s) {
+  Widget _buildActions(Renovily s) {
     if (!_hasProfile) {
       return SizedBox(
         height: 54,

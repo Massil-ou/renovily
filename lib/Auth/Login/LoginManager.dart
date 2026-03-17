@@ -157,7 +157,7 @@ class LoginManager {
     required String email,
     required String password,
   }) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;
@@ -195,7 +195,7 @@ class LoginManager {
   Future<BaseResponse<LoginData>> submitLoginStep2({
     required String otp,
   }) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;
@@ -235,7 +235,7 @@ class LoginManager {
   Future<BaseResponse<StatusData>> submitForgotByLink({
     required String email,
   }) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;

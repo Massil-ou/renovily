@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../App/AppLanguage.dart';
 import '../App/Manager.dart';
 import '../Dashboard/LanguageService.dart';
 

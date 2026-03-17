@@ -46,6 +46,7 @@ class _AnnonceSettingViewState extends State<OfferSettingView> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
     final topGap = MediaQuery.of(context).padding.top;
 
     return Stack(
@@ -60,9 +61,9 @@ class _AnnonceSettingViewState extends State<OfferSettingView> {
                 builder: (_, __, ___) {
                   return _AnnonceSwitchBar(
                     selected: _section,
-                    labelMesAnnonces: 'Mes annonces',
-                    labelAjouter: 'Ajouter',
-                    labelFavoris: 'Favoris',
+                    labelMesAnnonces: s.myOffers,
+                    labelAjouter: s.add,
+                    labelFavoris: s.favorites,
                     onMesAnnonces: () => _set(OfferSettingsSection.mesAnnonces),
                     onAjouter: () => _set(OfferSettingsSection.ajouter),
                     onFavoris: () => _set(OfferSettingsSection.favoris),
@@ -278,7 +279,6 @@ class GlassSection extends StatelessWidget {
     );
   }
 }
-
 
 class PageHeader extends StatelessWidget {
   final String title;

@@ -254,7 +254,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildLoginFormCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Column(
       key: const ValueKey('login_form_card'),
@@ -283,7 +283,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildOtpFormCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Column(
       key: const ValueKey('login_otp_card'),
@@ -321,7 +321,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildForgotByLinkCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Column(
       key: const ValueKey('forgot_link_card'),
@@ -359,7 +359,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildForgotSentCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
     final email = _lm.forgotEmail;
 
     return Column(
@@ -426,7 +426,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildLoginForm() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Form(
       key: _loginKey,
@@ -551,7 +551,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildOtpForm() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Form(
       key: _otpKey,
@@ -613,7 +613,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _buildForgotByLinkForm() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Form(
       key: _forgotKey,

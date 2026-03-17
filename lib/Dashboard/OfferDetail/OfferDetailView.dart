@@ -93,11 +93,12 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Future<void> _fetchIfNeeded() async {
+    final s = widget.manager.renovilyTranslation;
     final id = (widget.itemId ?? '').trim();
 
     if (id.isEmpty) {
       setState(() {
-        _inlineError = 'missing_item_id';
+        _inlineError = s.missingItemId;
         _current = null;
         _loading = false;
       });
@@ -143,7 +144,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         setState(() {
           _current = null;
           _inlineError = widget.manager.offersDetailsManager.lastError ??
-              'annonce_introuvable';
+              s.offerNotFound;
           _loading = false;
         });
         return;
@@ -249,11 +250,12 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   String _shareMessageForItem(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final parts = <String>[
       item.titre.trim(),
       if (item.metier.trim().isNotEmpty) item.metier.trim(),
       if (item.prix != null)
-        '${item.prix} DA${item.unitePrix != null ? ' / ${item.unitePrix!.label}' : ''}',
+        '${item.prix} ${s.currencyDa}${item.unitePrix != null ? ' / ${item.unitePrix!.label}' : ''}',
       _shareUrlForItem(item.id),
     ];
     return parts.where((e) => e.trim().isNotEmpty).join('\n');
@@ -284,11 +286,13 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
   Future<void> _showGlassDialog({
     required String message,
-    String title = 'renovily',
+    String? title,
     IconData icon = Icons.info_outline,
     Color iconBg = const Color(0xFFEAF3FF),
     Color iconColor = Colors.blueAccent,
   }) async {
+    final s = widget.manager.renovilyTranslation;
+
     if (!mounted) return;
 
     await showDialog<void>(
@@ -296,9 +300,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
       builder: (_) => _GlassInfoDialog(
-        title: title,
+        title: title ?? s.appName,
         message: message,
-        okText: 'OK',
+        okText: s.ok,
         icon: icon,
         iconBg: iconBg,
         iconColor: iconColor,
@@ -311,7 +315,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => const _LoginRequiredDialog(),
+      builder: (_) => _LoginRequiredDialog(manager: widget.manager),
     );
 
     return result == true;
@@ -330,6 +334,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Future<void> _toggleFavorite() async {
+    final s = widget.manager.renovilyTranslation;
     final item = _current;
     if (item == null) return;
 
@@ -348,18 +353,18 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       });
 
       await _showGlassDialog(
-        title: isFav ? 'Favori ajouté' : 'Favori retiré',
+        title: isFav ? s.favoriteAdded : s.favoriteRemoved,
         message: isFav
-            ? 'Cette annonce a été ajoutée à vos favoris.'
-            : 'Cette annonce a été retirée de vos favoris.',
+            ? s.offerAddedToFavorites
+            : s.offerRemovedFromFavorites,
         icon: isFav ? Icons.favorite : Icons.favorite_border,
         iconBg: const Color(0xFFFFEEF3),
         iconColor: Colors.redAccent,
       );
     } else {
       await _showGlassDialog(
-        title: 'Erreur',
-        message: 'Impossible de modifier le favori.',
+        title: s.error,
+        message: s.favoriteUpdateImpossible,
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
@@ -423,6 +428,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Future<void> _openAvisDialog() async {
+    final s = widget.manager.renovilyTranslation;
     final item = _current;
     if (item == null) return;
 
@@ -432,8 +438,8 @@ class _DarekDetailViewState extends State<OfferDetailView> {
     final alreadyHasMine = _findMyReview(item.avis) != null;
     if (alreadyHasMine) {
       await _showGlassDialog(
-        title: 'Avis déjà publié',
-        message: 'Vous avez déjà publié un avis pour cette offre.',
+        title: s.reviewAlreadyPublished,
+        message: s.reviewAlreadyPublishedForOffer,
         icon: Icons.info_outline,
       );
       return;
@@ -443,7 +449,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => const _AddAvisDialog(),
+      builder: (_) => _AddAvisDialog(manager: widget.manager),
     );
 
     if (result == null || !mounted) return;
@@ -470,17 +476,17 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         });
 
         await _showGlassDialog(
-          title: 'Avis envoyé',
-          message: 'Merci, votre avis a bien été envoyé.',
+          title: s.reviewSent,
+          message: s.reviewSentThanks,
           icon: Icons.check_circle_outline,
           iconBg: const Color(0xFFE8F7EC),
           iconColor: Colors.green,
         );
       } else {
         await _showGlassDialog(
-          title: 'Erreur',
+          title: s.error,
           message: widget.manager.offerReviewsManager.lastError ??
-              'Impossible d’envoyer votre avis.',
+              s.reviewSendImpossible,
           icon: Icons.error_outline,
           iconBg: const Color(0xFFFFE5E5),
           iconColor: Colors.redAccent,
@@ -496,10 +502,12 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Future<void> _deleteMyReview(OfferReviews avis) async {
+    final s = widget.manager.renovilyTranslation;
+
     if (!_isMyReview(avis)) {
       await _showGlassDialog(
-        title: 'Action refusée',
-        message: 'Vous ne pouvez supprimer que votre propre avis.',
+        title: s.actionDenied,
+        message: s.deleteOnlyOwnReview,
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
@@ -512,8 +520,8 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
     if (idreview.isEmpty) {
       await _showGlassDialog(
-        title: 'Erreur',
-        message: 'Identifiant de l’avis introuvable.',
+        title: s.error,
+        message: s.reviewIdNotFound,
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
@@ -525,7 +533,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => const _ConfirmDeleteAvisDialog(),
+      builder: (_) => _ConfirmDeleteAvisDialog(manager: widget.manager),
     ) ??
         false;
 
@@ -559,17 +567,17 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         }
 
         await _showGlassDialog(
-          title: 'Avis supprimé',
-          message: 'Votre avis a bien été supprimé.',
+          title: s.reviewDeleted,
+          message: s.reviewDeletedSuccess,
           icon: Icons.delete_outline,
           iconBg: const Color(0xFFFFF3E0),
           iconColor: Colors.orange,
         );
       } else {
         await _showGlassDialog(
-          title: 'Erreur',
+          title: s.error,
           message: widget.manager.offerReviewsManager.lastError ??
-              'Impossible de supprimer votre avis.',
+              s.reviewDeleteImpossible,
           icon: Icons.error_outline,
           iconBg: const Color(0xFFFFE5E5),
           iconColor: Colors.redAccent,
@@ -585,10 +593,11 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   String _priceText(OfferModel item) {
-    if (item.prix == null) return 'Prix à négocier';
+    final s = widget.manager.renovilyTranslation;
+    if (item.prix == null) return s.priceNegotiable;
     return item.unitePrix != null
-        ? '${item.prix} DA / ${item.unitePrix!.label}'
-        : '${item.prix} DA';
+        ? '${item.prix} ${s.currencyDa} / ${item.unitePrix!.label}'
+        : '${item.prix} ${s.currencyDa}';
   }
 
   String _locationText(OfferModel item) {
@@ -631,12 +640,14 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   String _messageBody(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final title =
-    item.titre.trim().isEmpty ? 'votre annonce' : item.titre.trim();
-    return 'Bonjour, je vous contacte au sujet de "$title".';
+    item.titre.trim().isEmpty ? s.yourOffer : item.titre.trim();
+    return s.contactAboutOffer(title);
   }
 
   Future<void> _callItem() async {
+    final s = widget.manager.renovilyTranslation;
     final item = _current;
     if (item == null) return;
 
@@ -645,7 +656,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
     if (phone.isEmpty) {
       await _showGlassDialog(
-        message: 'Numéro de téléphone indisponible.',
+        message: s.phoneUnavailable,
         icon: Icons.phone_disabled_outlined,
         iconBg: const Color(0xFFFFF3E0),
         iconColor: Colors.orange,
@@ -658,7 +669,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
     if (!ok && mounted) {
       await _showGlassDialog(
-        message: 'Impossible d’ouvrir l’appel.',
+        message: s.openCallImpossible,
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
@@ -667,6 +678,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Future<void> _messageItem() async {
+    final s = widget.manager.renovilyTranslation;
     final item = _current;
     if (item == null) return;
 
@@ -675,7 +687,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
     if (phone.isEmpty) {
       await _showGlassDialog(
-        message: 'Numéro de téléphone indisponible.',
+        message: s.phoneUnavailable,
         icon: Icons.sms_failed_outlined,
         iconBg: const Color(0xFFFFF3E0),
         iconColor: Colors.orange,
@@ -695,7 +707,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
     if (!ok && mounted) {
       await _showGlassDialog(
-        message: 'Impossible d’ouvrir les messages.',
+        message: s.openMessagesImpossible,
         icon: Icons.error_outline,
         iconBg: const Color(0xFFFFE5E5),
         iconColor: Colors.redAccent,
@@ -802,7 +814,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -824,7 +836,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
           ),
         ),
       ),
-      title: _GlassTitlePill(onTap: _goHome),
+      title: _GlassTitlePill(manager: widget.manager, onTap: _goHome),
       actions: [
         Center(
           child: SizedBox(
@@ -837,14 +849,14 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         ),
         const SizedBox(width: 8),
         _GlassCircleIconButton(
-          tooltip: 'Favori',
+          tooltip: s.favorite,
           icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
           onTap: _toggleFavorite,
           iconColor: _isFavorite ? Colors.redAccent : Colors.white,
         ),
         const SizedBox(width: 8),
         _GlassCircleIconButton(
-          tooltip: 'Partager',
+          tooltip: s.share,
           icon: Icons.share_outlined,
           onTap: _shareItem,
         ),
@@ -1084,44 +1096,45 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildInfoGrid(OfferModel item, bool isWide) {
+    final s = widget.manager.renovilyTranslation;
+
     final cards = [
       _infoTile(
         icon: Icons.work_outline,
-        label: 'Métier',
+        label: s.job,
         value: item.metier.trim().isEmpty ? '-' : item.metier,
       ),
       _infoTile(
         icon: Icons.location_on_outlined,
-        label: 'Localisation',
+        label: s.location,
         value: _locationText(item),
       ),
       _infoTile(
         icon: Icons.sell_outlined,
-        label: 'Tarif',
+        label: s.rate,
         value: _priceText(item),
       ),
       _infoTile(
         icon: Icons.phone_outlined,
-        label: 'Téléphone',
+        label: s.phone,
         value: _phoneText(item)?.trim().isNotEmpty == true
             ? _displayPhone(_phoneText(item)!)
             : '-',
       ),
       _infoTile(
         icon: Icons.calendar_today_outlined,
-        label: 'Publié le',
+        label: s.publishedOn,
         value: _dateText(item.createdAt),
       ),
       _infoTile(
         icon: Icons.workspace_premium_outlined,
-        label: 'Expérience',
-        value:
-        '${item.experienceAnnees} an${item.experienceAnnees > 1 ? 's' : ''}',
+        label: s.experience,
+        value: s.yearsCount(item.experienceAnnees),
       ),
       _infoTile(
         icon: Icons.rate_review_outlined,
-        label: 'Avis',
-        value: '${item.nbAvis} avis • ${_noteSafe(item).toStringAsFixed(1)}/5',
+        label: s.reviews,
+        value: s.reviewsSummary(item.nbAvis, _noteSafe(item).toStringAsFixed(1)),
       ),
     ];
 
@@ -1183,6 +1196,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildActionRow() {
+    final s = widget.manager.renovilyTranslation;
     final item = _current;
     final myReview = item == null ? null : _findMyReview(item.avis);
 
@@ -1193,7 +1207,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
             Expanded(
               child: _actionButton(
                 icon: Icons.call_outlined,
-                text: 'Appeler',
+                text: s.call,
                 onTap: _callItem,
                 bg: Colors.black,
                 fg: Colors.white,
@@ -1203,7 +1217,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
             Expanded(
               child: _actionButton(
                 icon: Icons.message_outlined,
-                text: 'Message',
+                text: s.message,
                 onTap: _messageItem,
                 bg: const Color(0xFFF3F4F6),
                 fg: Colors.black,
@@ -1225,9 +1239,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
                   : const Icon(Icons.rate_review_outlined, size: 20),
-              label: const Text(
-                'Laisser un avis',
-                style: TextStyle(
+              label: Text(
+                s.leaveReview,
+                style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
                 ),
@@ -1259,9 +1273,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
                   : const Icon(Icons.delete_outline, size: 20),
-              label: const Text(
-                'Supprimer mon avis',
-                style: TextStyle(
+              label: Text(
+                s.deleteMyReview,
+                style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
                 ),
@@ -1312,6 +1326,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildIndiceGauge(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final score = _indiceSafe(item);
     final progress = ((score - 1.0) / 9.0).clamp(0.0, 1.0);
 
@@ -1328,9 +1343,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Indice de finition',
-            style: TextStyle(
+          Text(
+            s.finishingIndex,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
               color: Colors.black,
@@ -1338,7 +1353,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Niveau estimé de qualité de finition',
+            s.finishingQualityEstimated,
             style: TextStyle(
               fontSize: 13,
               height: 1.4,
@@ -1410,6 +1425,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildRatingBlock(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final note = _noteSafe(item);
 
     return Container(
@@ -1449,7 +1465,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                 _buildStars(note, size: 20),
                 const SizedBox(height: 6),
                 Text(
-                  '${item.nbAvis} avis client${item.nbAvis > 1 ? 's' : ''}',
+                  s.clientReviewsCount(item.nbAvis),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.black.withOpacity(0.72),
@@ -1465,6 +1481,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildExpandableDescription(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final text = item.description.trim();
     if (text.isEmpty) return const SizedBox.shrink();
 
@@ -1476,9 +1493,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Description',
-          style: TextStyle(
+        Text(
+          s.description,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w900,
             color: Colors.black,
@@ -1508,7 +1525,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              _showFullDescription ? 'Voir moins' : 'Voir plus',
+              _showFullDescription ? s.seeLess : s.seeMore,
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 color: Colors.black,
@@ -1521,6 +1538,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildAvisSection(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final avis = _sortedAvisWithMineFirst(item.avis);
 
     if (avis.isEmpty) {
@@ -1536,7 +1554,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
           ),
         ),
         child: Text(
-          'Aucun avis pour le moment.',
+          s.noReviewsYet,
           style: TextStyle(
             fontSize: 14,
             color: Colors.black.withOpacity(0.65),
@@ -1552,9 +1570,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Avis clients',
-          style: TextStyle(
+        Text(
+          s.clientReviews,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w900,
             color: Colors.black,
@@ -1565,6 +1583,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         const SizedBox(height: 12),
         for (int i = 0; i < visibleAvis.length; i++) ...[
           _AvisTile(
+            manager: widget.manager,
             avis: visibleAvis[i],
             canDelete: _isMyReview(visibleAvis[i]),
             onDelete: _isMyReview(visibleAvis[i])
@@ -1592,7 +1611,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                 ),
               ),
               child: Text(
-                _showAllAvis ? 'Voir moins' : 'Voir plus',
+                _showAllAvis ? s.seeLess : s.seeMore,
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                 ),
@@ -1605,6 +1624,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildRelatedSection(OfferModel item) {
+    final s = widget.manager.renovilyTranslation;
     final related = _relatedItems(item);
 
     if (related.isEmpty) return const SizedBox.shrink();
@@ -1613,9 +1633,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 28),
-        const Text(
-          'Annonces similaires',
-          style: TextStyle(
+        Text(
+          s.similarOffers,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w900,
             color: Colors.black,
@@ -1624,7 +1644,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
         const SizedBox(height: 14),
         HorizontalDarek(
           items: related,
-          emptyText: 'Aucune annonce similaire',
+          emptyText: s.noSimilarOffers,
           onTap: _openRelated,
           shadow: false,
         ),
@@ -1633,6 +1653,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
   }
 
   Widget _buildHeaderInfosOnly(OfferModel item, bool isWide) {
+    final s = widget.manager.renovilyTranslation;
     final namePro = item.namePro.trim();
     final hasNamePro = namePro.isNotEmpty;
     final phone = _phoneText(item);
@@ -1648,7 +1669,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Pro',
+              s.pro,
               style: TextStyle(
                 color: Colors.blue.shade800,
                 fontWeight: FontWeight.w800,
@@ -1779,6 +1800,7 @@ class _DarekDetailViewState extends State<OfferDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
     final isWide = MediaQuery.of(context).size.width > 800;
 
     return ValueListenableBuilder<AppLanguage>(
@@ -1805,9 +1827,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _GlassInfoDialog(
-                      title: 'renovily',
-                      message: _inlineError ?? 'Annonce introuvable',
-                      okText: 'OK',
+                      title: s.appName,
+                      message: _inlineError ?? s.offerNotFound,
+                      okText: s.ok,
                       icon: Icons.error_outline,
                       iconBg: const Color(0xFFFFE5E5),
                       iconColor: Colors.redAccent,
@@ -1818,9 +1840,9 @@ class _DarekDetailViewState extends State<OfferDetailView> {
                       child: OutlinedButton.icon(
                         onPressed: _fetchIfNeeded,
                         icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text(
-                          'Réessayer',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        label: Text(
+                          s.retry,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -1857,7 +1879,9 @@ class _AddAvisResult {
 }
 
 class _AddAvisDialog extends StatefulWidget {
-  const _AddAvisDialog();
+  final Manager manager;
+
+  const _AddAvisDialog({required this.manager});
 
   @override
   State<_AddAvisDialog> createState() => _AddAvisDialogState();
@@ -1916,6 +1940,8 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -1953,10 +1979,10 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Laisser un avis',
-                          style: TextStyle(
+                          s.leaveReview,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             color: Colors.black,
@@ -1966,9 +1992,9 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Votre note',
-                    style: TextStyle(
+                  Text(
+                    s.yourRating,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
@@ -1979,10 +2005,10 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Indice de finition',
-                          style: TextStyle(
+                          s.finishingIndex,
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: Colors.black,
@@ -2040,7 +2066,7 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                     maxLines: 6,
                     textInputAction: TextInputAction.newline,
                     decoration: InputDecoration(
-                      hintText: 'Votre avis...',
+                      hintText: s.yourReviewHint,
                       filled: true,
                       fillColor: Colors.black.withOpacity(0.03),
                       contentPadding: const EdgeInsets.symmetric(
@@ -2082,7 +2108,7 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Annuler'),
+                          child: Text(s.cancel),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -2097,7 +2123,7 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Envoyer'),
+                          child: Text(s.send),
                         ),
                       ),
                     ],
@@ -2113,11 +2139,13 @@ class _AddAvisDialogState extends State<_AddAvisDialog> {
 }
 
 class _AvisTile extends StatelessWidget {
+  final Manager manager;
   final OfferReviews avis;
   final bool canDelete;
   final VoidCallback? onDelete;
 
   const _AvisTile({
+    required this.manager,
     required this.avis,
     this.canDelete = false,
     this.onDelete,
@@ -2144,7 +2172,8 @@ class _AvisTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prenom = avis.prenom.trim().isEmpty ? 'Client' : avis.prenom.trim();
+    final s = manager.renovilyTranslation;
+    final prenom = avis.prenom.trim().isEmpty ? s.client : avis.prenom.trim();
     final date = _dateText(avis.createdAt);
 
     return Container(
@@ -2202,9 +2231,9 @@ class _AvisTile extends StatelessWidget {
                               color: const Color(0xFFEAF3FF),
                               borderRadius: BorderRadius.circular(999),
                             ),
-                            child: const Text(
-                              'Votre avis',
-                              style: TextStyle(
+                            child: Text(
+                              s.yourReview,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.blueAccent,
@@ -2232,7 +2261,7 @@ class _AvisTile extends StatelessWidget {
                   _stars(avis.note),
                   const SizedBox(height: 4),
                   Text(
-                    'Finition ${avis.indiceFinition.toStringAsFixed(1)}/10',
+                    s.finishingScore(avis.indiceFinition.toStringAsFixed(1)),
                     style: TextStyle(
                       fontSize: 11.5,
                       color: Colors.black.withOpacity(0.58),
@@ -2246,7 +2275,7 @@ class _AvisTile extends StatelessWidget {
                 IconButton(
                   onPressed: onDelete,
                   visualDensity: VisualDensity.compact,
-                  tooltip: 'Supprimer',
+                  tooltip: s.delete,
                   icon: const Icon(
                     Icons.delete_outline,
                     color: Colors.redAccent,
@@ -2274,10 +2303,14 @@ class _AvisTile extends StatelessWidget {
 }
 
 class _ConfirmDeleteAvisDialog extends StatelessWidget {
-  const _ConfirmDeleteAvisDialog();
+  final Manager manager;
+
+  const _ConfirmDeleteAvisDialog({required this.manager});
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -2298,18 +2331,18 @@ class _ConfirmDeleteAvisDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Supprimer votre avis ?',
-                  style: TextStyle(
+                Text(
+                  s.deleteYourReviewQuestion,
+                  style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Cette action est définitive.',
-                  style: TextStyle(
+                Text(
+                  s.thisActionIsPermanent,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black87,
                   ),
@@ -2320,7 +2353,7 @@ class _ConfirmDeleteAvisDialog extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Annuler'),
+                        child: Text(s.cancel),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -2331,7 +2364,7 @@ class _ConfirmDeleteAvisDialog extends StatelessWidget {
                           backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Supprimer'),
+                        child: Text(s.delete),
                       ),
                     ),
                   ],
@@ -2346,10 +2379,14 @@ class _ConfirmDeleteAvisDialog extends StatelessWidget {
 }
 
 class _LoginRequiredDialog extends StatelessWidget {
-  const _LoginRequiredDialog();
+  final Manager manager;
+
+  const _LoginRequiredDialog({required this.manager});
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -2386,10 +2423,10 @@ class _LoginRequiredDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Connexion requise',
-                        style: TextStyle(
+                        s.loginRequired,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
                           color: Colors.black,
@@ -2399,9 +2436,9 @@ class _LoginRequiredDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Veuillez vous connecter pour exécuter cette action.',
-                  style: TextStyle(
+                Text(
+                  s.pleaseLoginToProceed,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black87,
                   ),
@@ -2421,7 +2458,7 @@ class _LoginRequiredDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Annuler'),
+                        child: Text(s.cancel),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -2436,7 +2473,7 @@ class _LoginRequiredDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Se connecter'),
+                        child: Text(s.signIn),
                       ),
                     ),
                   ],
@@ -2550,12 +2587,15 @@ class _GlassInfoDialog extends StatelessWidget {
 }
 
 class _GlassTitlePill extends StatelessWidget {
+  final Manager manager;
   final VoidCallback? onTap;
 
-  const _GlassTitlePill({this.onTap});
+  const _GlassTitlePill({required this.manager, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -2578,9 +2618,9 @@ class _GlassTitlePill extends StatelessWidget {
                   width: 0.8,
                 ),
               ),
-              child: const Text(
-                'Renovily',
-                style: TextStyle(
+              child: Text(
+                s.appName,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 18,

@@ -36,6 +36,7 @@ class _PartnerSettingsViewState extends State<PartnerSettingsView> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
     final topGap = MediaQuery.of(context).padding.top;
 
     return Stack(
@@ -48,10 +49,9 @@ class _PartnerSettingsViewState extends State<PartnerSettingsView> {
               ValueListenableBuilder<AppLanguage>(
                 valueListenable: widget.manager.languageService.language,
                 builder: (_, __, ___) {
-                  final s = widget.manager.winyCarTranslation;
                   return _SettingsSwitchBar(
                     selected: _section,
-                    labelClient: 'Profile client',
+                    labelClient: s.clientProfile,
                     labelProfile: s.proProfileTitle,
                     onClient: () => _set(PartnerSettingsSection.clientProfile),
                     onProfile: () => _set(PartnerSettingsSection.profile),

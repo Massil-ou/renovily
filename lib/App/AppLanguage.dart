@@ -1,11 +1,11 @@
 import '../Dashboard/LanguageService.dart';
 import 'Manager.dart';
 
-class WinyCar {
+class Renovily {
   final AppLanguage lang;
-  WinyCar(this.lang);
+  Renovily(this.lang);
 
-  static WinyCar of(Manager m) => WinyCar(m.languageService.appLanguage);
+  static Renovily of(Manager m) => Renovily(m.languageService.appLanguage);
 
   String _t(String fr, String en, String ar) {
     switch (lang) {
@@ -1214,4 +1214,790 @@ class WinyCar {
     'هل تريد حقًا تسجيل الخروج؟',
   );
 
+
+  String get btp => _t('BTP', 'Construction', 'البناء');
+
+  String get findBtpProfessional => _t(
+    'Trouver un professionnel du BTP',
+    'Find a construction professional',
+    'اعثر على محترف في مجال البناء',
+  );
+
+  String get searchArtisanHint => _t(
+    'Recherche plombier, maçon...',
+    'Search plumber, mason...',
+    'ابحث عن سباك، بنّاء...',
+  );
+
+  String get searchLabel => _t(
+    'Q',
+    'Q',
+    'بحث',
+  );
+
+  String minPriceDa(int price) => _tp(
+    'Min {price} DA',
+    'Min {price} DZD',
+    'الحد الأدنى {price} دج',
+    {'price': '$price'},
+  );
+
+  String maxPriceDa(int price) => _tp(
+    'Max {price} DA',
+    'Max {price} DZD',
+    'الحد الأقصى {price} دج',
+    {'price': '$price'},
+  );
+
+  String get pro => _t(
+    'Pro',
+    'Pro',
+    'محترف',
+  );
+
+  String get nonPro => _t(
+    'Non pro',
+    'Non-pro',
+    'غير محترف',
+  );
+
+  String get noResults => _t(
+    'Aucun résultat',
+    'No results',
+    'لا توجد نتائج',
+  );
+
+  String get tryBroadenSearch => _t(
+    'Essaie d’élargir la recherche ou de modifier les filtres.',
+    'Try broadening your search or changing the filters.',
+    'حاول توسيع البحث أو تعديل عوامل التصفية.',
+  );
+
+  String get offerPublished => _t(
+    'Offre publiée',
+    'Offer published',
+    'تم نشر العرض',
+  );
+
+  String get offerPublishedSuccess => _t(
+    'Votre offre a bien été publiée.',
+    'Your offer has been published successfully.',
+    'تم نشر عرضك بنجاح.',
+  );
+
+  String get serverCommunicationImpossible => _t(
+    'Impossible de communiquer avec le serveur.',
+    'Unable to communicate with the server.',
+    'تعذر الاتصال بالخادم.',
+  );
+
+  String get offerPublishImpossible => _t(
+    'Impossible de publier cette offre.',
+    'Unable to publish this offer.',
+    'تعذر نشر هذا العرض.',
+  );
+
+  String get unexpectedErrorOccurred => _t(
+    'Une erreur inattendue est survenue.',
+    'An unexpected error occurred.',
+    'حدث خطأ غير متوقع.',
+  );
+
+
+  String get gallery => _t(
+    'Galerie',
+    'Gallery',
+    'المعرض',
+  );
+
+  String get camera => _t(
+    'Caméra',
+    'Camera',
+    'الكاميرا',
+  );
+
+  String get offerLimit => _t(
+    'Limite d’offres',
+    'Offer limit',
+    'حد العروض',
+  );
+
+  String get clientOfferLimitInfo => _t(
+    'Votre compte client peut publier jusqu’à 5 offres. Passez pro pour augmenter cette limite.',
+    'Your client account can publish up to 5 offers. Upgrade to pro to increase this limit.',
+    'يمكن لحساب العميل الخاص بك نشر ما يصل إلى 5 عروض. قم بالترقية إلى حساب احترافي لزيادة هذا الحد.',
+  );
+
+  String get photos => _t(
+    'Photos',
+    'Photos',
+    'الصور',
+  );
+
+  String get optional => _t(
+    'Optionnel',
+    'Optional',
+    'اختياري',
+  );
+
+  String get priceUnit => _t(
+    'Unité de prix',
+    'Price unit',
+    'وحدة السعر',
+  );
+
+  String get priceUnitRequired => _t(
+    'Unité de prix obligatoire',
+    'Price unit is required',
+    'وحدة السعر مطلوبة',
+  );
+
+  String get title => _t(
+    'Titre',
+    'Title',
+    'العنوان',
+  );
+
+  String get titleRequired => _t(
+    'Titre obligatoire',
+    'Title is required',
+    'العنوان مطلوب',
+  );
+
+  String get job => _t(
+    'Métier',
+    'Job',
+    'المهنة',
+  );
+
+  String get jobRequired => _t(
+    'Métier obligatoire',
+    'Job is required',
+    'المهنة مطلوبة',
+  );
+
+  String get yearsExperience => _t(
+    'Années d’expérience',
+    'Years of experience',
+    'سنوات الخبرة',
+  );
+
+  String get experienceRequired => _t(
+    'Expérience obligatoire',
+    'Experience is required',
+    'الخبرة مطلوبة',
+  );
+
+  String get experienceDigitsOnly => _t(
+    'L’expérience doit contenir uniquement des chiffres',
+    'Experience must contain digits only',
+    'يجب أن تحتوي الخبرة على أرقام فقط',
+  );
+
+  String get price => _t(
+    'Prix',
+    'Price',
+    'السعر',
+  );
+
+  String get priceRequired => _t(
+    'Prix obligatoire',
+    'Price is required',
+    'السعر مطلوب',
+  );
+
+  String get priceDigitsOnly => _t(
+    'Le prix doit contenir uniquement des chiffres',
+    'Price must contain digits only',
+    'يجب أن يحتوي السعر على أرقام فقط',
+  );
+
+  String get description => _t(
+    'Description',
+    'Description',
+    'الوصف',
+  );
+
+  String get descriptionRequired => _t(
+    'Description obligatoire',
+    'Description is required',
+    'الوصف مطلوب',
+  );
+
+  String get publish => _t(
+    'Publier',
+    'Publish',
+    'نشر',
+  );
+
+
+  String get myOffers => _t(
+    'Mes annonces',
+    'My offers',
+    'عروضي',
+  );
+
+  String get managePublishedOffers => _t(
+    'Gérer vos annonces publiées',
+    'Manage your published offers',
+    'إدارة عروضك المنشورة',
+  );
+
+  String get loadOffersFailed => _t(
+    'Impossible de charger vos annonces.',
+    'Unable to load your offers.',
+    'تعذر تحميل عروضك.',
+  );
+
+  String get updateOfferFailed => _t(
+    'Impossible de modifier cette annonce.',
+    'Unable to update this offer.',
+    'تعذر تعديل هذا العرض.',
+  );
+
+  String get deleteOfferFailed => _t(
+    'Impossible de supprimer cette annonce.',
+    'Unable to delete this offer.',
+    'تعذر حذف هذا العرض.',
+  );
+
+  String get invalidServerResponse => _t(
+    'Réponse serveur invalide.',
+    'Invalid server response.',
+    'استجابة الخادم غير صالحة.',
+  );
+
+  String get serverCommunicationError => _t(
+    'Une erreur est survenue lors de la communication avec le serveur.',
+    'An error occurred while communicating with the server.',
+    'حدث خطأ أثناء الاتصال بالخادم.',
+  );
+
+  String get priceNegotiable => _t(
+    'Prix à négocier',
+    'Negotiable price',
+    'السعر قابل للتفاوض',
+  );
+
+  String get editOffer => _t(
+    'Modifier l’annonce',
+    'Edit offer',
+    'تعديل العرض',
+  );
+
+  String get phone => _t(
+    'Téléphone',
+    'Phone',
+    'الهاتف',
+  );
+
+  String get unit => _t(
+    'Unité',
+    'Unit',
+    'الوحدة',
+  );
+
+  String get noUnit => _t(
+    'Aucune unité',
+    'No unit',
+    'بدون وحدة',
+  );
+
+  String get deleteOffer => _t(
+    'Supprimer l’annonce',
+    'Delete offer',
+    'حذف العرض',
+  );
+
+  String get confirmDeleteOffer => _t(
+    'Voulez-vous vraiment supprimer cette annonce ?',
+    'Do you really want to delete this offer?',
+    'هل تريد حقاً حذف هذا العرض؟',
+  );
+
+  String get delete => _t(
+    'Supprimer',
+    'Delete',
+    'حذف',
+  );
+
+  String get noOffer => _t(
+    'Aucune annonce',
+    'No offers',
+    'لا توجد عروض',
+  );
+
+  String get publishedOffersAppearHere => _t(
+    'Vos annonces publiées apparaîtront ici.',
+    'Your published offers will appear here.',
+    'ستظهر عروضك المنشورة هنا.',
+  );
+
+  String get favorites => _t(
+    'Favoris',
+    'Favorites',
+    'المفضلة',
+  );
+
+  String get savedOffersSubtitle => _t(
+    'Retrouvez vos annonces sauvegardées',
+    'Find your saved listings',
+    'اعثر على إعلاناتك المحفوظة',
+  );
+
+  String get addFavoriteFailed => _t(
+    'Impossible d’ajouter cette annonce aux favoris.',
+    'Unable to add this listing to favorites.',
+    'تعذر إضافة هذا الإعلان إلى المفضلة.',
+  );
+
+  String get removeFavoriteFailed => _t(
+    'Impossible de retirer cette annonce des favoris.',
+    'Unable to remove this listing from favorites.',
+    'تعذر إزالة هذا الإعلان من المفضلة.',
+  );
+
+  String get notAvailableShort => _t(
+    '-',
+    '-',
+    '-',
+  );
+
+  String get noFavorites => _t(
+    'Aucun favori',
+    'No favorites',
+    'لا توجد مفضلات',
+  );
+
+  String get savedOffersAppearHere => _t(
+    'Vos annonces sauvegardées apparaîtront ici.',
+    'Your saved listings will appear here.',
+    'ستظهر إعلاناتك المحفوظة هنا.',
+  );
+
+  String get removeFromFavorites => _t(
+    'Retirer des favoris',
+    'Remove from favorites',
+    'إزالة من المفضلة',
+  );
+
+  String get confirmRemoveFavorite => _t(
+    'Voulez-vous vraiment retirer cette annonce de vos favoris ?',
+    'Do you really want to remove this listing from your favorites?',
+    'هل تريد حقاً إزالة هذا الإعلان من المفضلة؟',
+  );
+  String get missingItemId => _t(
+    'Identifiant de l’annonce manquant',
+    'Missing offer ID',
+    'معرّف العرض مفقود',
+  );
+
+  String get offerNotFound => _t(
+    'Annonce introuvable',
+    'Offer not found',
+    'العرض غير موجود',
+  );
+
+  String get currencyDa => _t(
+    'DA',
+    'DZD',
+    'دج',
+  );
+
+  String get favorite => _t(
+    'Favori',
+    'Favorite',
+    'المفضلة',
+  );
+
+  String get share => _t(
+    'Partager',
+    'Share',
+    'مشاركة',
+  );
+
+  String get favoriteAdded => _t(
+    'Favori ajouté',
+    'Favorite added',
+    'تمت الإضافة إلى المفضلة',
+  );
+
+  String get favoriteRemoved => _t(
+    'Favori retiré',
+    'Favorite removed',
+    'تمت الإزالة من المفضلة',
+  );
+
+  String get offerAddedToFavorites => _t(
+    'Cette annonce a été ajoutée à vos favoris.',
+    'This offer has been added to your favorites.',
+    'تمت إضافة هذا العرض إلى مفضلتك.',
+  );
+
+  String get offerRemovedFromFavorites => _t(
+    'Cette annonce a été retirée de vos favoris.',
+    'This offer has been removed from your favorites.',
+    'تمت إزالة هذا العرض من مفضلتك.',
+  );
+
+  String get favoriteUpdateImpossible => _t(
+    'Impossible de modifier le favori.',
+    'Unable to update favorite.',
+    'تعذر تعديل المفضلة.',
+  );
+
+  String get reviewAlreadyPublished => _t(
+    'Avis déjà publié',
+    'Review already submitted',
+    'تم إرسال التقييم بالفعل',
+  );
+
+  String get reviewAlreadyPublishedForOffer => _t(
+    'Vous avez déjà publié un avis pour cette offre.',
+    'You have already submitted a review for this offer.',
+    'لقد أرسلت بالفعل تقييماً لهذا العرض.',
+  );
+
+  String get reviewSent => _t(
+    'Avis envoyé',
+    'Review sent',
+    'تم إرسال التقييم',
+  );
+
+  String get reviewSentThanks => _t(
+    'Merci, votre avis a bien été envoyé.',
+    'Thank you, your review has been sent successfully.',
+    'شكراً، تم إرسال تقييمك بنجاح.',
+  );
+
+  String get reviewSendImpossible => _t(
+    'Impossible d’envoyer votre avis.',
+    'Unable to send your review.',
+    'تعذر إرسال تقييمك.',
+  );
+
+  String get actionDenied => _t(
+    'Action refusée',
+    'Action denied',
+    'تم رفض الإجراء',
+  );
+
+  String get deleteOnlyOwnReview => _t(
+    'Vous ne pouvez supprimer que votre propre avis.',
+    'You can only delete your own review.',
+    'يمكنك حذف تقييمك فقط.',
+  );
+
+  String get reviewIdNotFound => _t(
+    'Identifiant de l’avis introuvable.',
+    'Review ID not found.',
+    'معرّف التقييم غير موجود.',
+  );
+
+  String get reviewDeleted => _t(
+    'Avis supprimé',
+    'Review deleted',
+    'تم حذف التقييم',
+  );
+
+  String get reviewDeletedSuccess => _t(
+    'Votre avis a bien été supprimé.',
+    'Your review has been deleted successfully.',
+    'تم حذف تقييمك بنجاح.',
+  );
+
+  String get reviewDeleteImpossible => _t(
+    'Impossible de supprimer votre avis.',
+    'Unable to delete your review.',
+    'تعذر حذف تقييمك.',
+  );
+
+  String get yourOffer => _t(
+    'votre annonce',
+    'your offer',
+    'عرضك',
+  );
+
+  String contactAboutOffer(String title) => _tp(
+    'Bonjour, je vous contacte au sujet de "{title}".',
+    'Hello, I am contacting you about "{title}".',
+    'مرحباً، أتواصل معك بخصوص "{title}".',
+    {'title': title},
+  );
+
+  String get phoneUnavailable => _t(
+    'Numéro de téléphone indisponible.',
+    'Phone number unavailable.',
+    'رقم الهاتف غير متوفر.',
+  );
+
+  String get openCallImpossible => _t(
+    'Impossible d’ouvrir l’appel.',
+    'Unable to open the call.',
+    'تعذر فتح الاتصال.',
+  );
+
+  String get openMessagesImpossible => _t(
+    'Impossible d’ouvrir les messages.',
+    'Unable to open messages.',
+    'تعذر فتح الرسائل.',
+  );
+
+  String get location => _t(
+    'Localisation',
+    'Location',
+    'الموقع',
+  );
+
+  String get rate => _t(
+    'Tarif',
+    'Rate',
+    'السعر',
+  );
+
+  String get publishedOn => _t(
+    'Publié le',
+    'Published on',
+    'نُشر في',
+  );
+
+  String get experience => _t(
+    'Expérience',
+    'Experience',
+    'الخبرة',
+  );
+
+  String get reviews => _t(
+    'Avis',
+    'Reviews',
+    'التقييمات',
+  );
+
+  String yearsCount(int years) => _tp(
+    '{years} an{suffix}',
+    '{years} year{suffix}',
+    '{years} سنة',
+    {
+      'years': '$years',
+      'suffix': years > 1 ? 's' : '',
+    },
+  );
+
+  String reviewsSummary(int count, String note) => _tp(
+    '{count} avis • {note}/5',
+    '{count} reviews • {note}/5',
+    '{count} تقييم • {note}/5',
+    {
+      'count': '$count',
+      'note': note,
+    },
+  );
+
+  String get call => _t(
+    'Appeler',
+    'Call',
+    'اتصال',
+  );
+
+  String get message => _t(
+    'Message',
+    'Message',
+    'رسالة',
+  );
+
+  String get leaveReview => _t(
+    'Laisser un avis',
+    'Leave a review',
+    'اترك تقييماً',
+  );
+
+  String get deleteMyReview => _t(
+    'Supprimer mon avis',
+    'Delete my review',
+    'حذف تقييمي',
+  );
+
+  String get finishingIndex => _t(
+    'Indice de finition',
+    'Finishing index',
+    'مؤشر التشطيب',
+  );
+
+  String get finishingQualityEstimated => _t(
+    'Niveau estimé de qualité de finition',
+    'Estimated finishing quality level',
+    'المستوى التقديري لجودة التشطيب',
+  );
+
+  String clientReviewsCount(int count) => _tp(
+    '{count} avis client{suffix}',
+    '{count} client review{suffix}',
+    '{count} تقييم عميل',
+    {
+      'count': '$count',
+      'suffix': count > 1 ? 's' : '',
+    },
+  );
+
+  String get seeLess => _t(
+    'Voir moins',
+    'See less',
+    'عرض أقل',
+  );
+
+  String get seeMore => _t(
+    'Voir plus',
+    'See more',
+    'عرض المزيد',
+  );
+
+  String get noReviewsYet => _t(
+    'Aucun avis pour le moment.',
+    'No reviews yet.',
+    'لا توجد تقييمات حالياً.',
+  );
+
+  String get clientReviews => _t(
+    'Avis clients',
+    'Client reviews',
+    'آراء العملاء',
+  );
+
+  String get similarOffers => _t(
+    'Annonces similaires',
+    'Similar offers',
+    'عروض مشابهة',
+  );
+
+  String get noSimilarOffers => _t(
+    'Aucune annonce similaire',
+    'No similar offers',
+    'لا توجد عروض مشابهة',
+  );
+
+  String get yourRating => _t(
+    'Votre note',
+    'Your rating',
+    'تقييمك',
+  );
+
+  String get yourReviewHint => _t(
+    'Votre avis...',
+    'Your review...',
+    'رأيك...',
+  );
+
+  String get send => _t(
+    'Envoyer',
+    'Send',
+    'إرسال',
+  );
+
+  String get client => _t(
+    'Client',
+    'Client',
+    'عميل',
+  );
+
+  String get yourReview => _t(
+    'Votre avis',
+    'Your review',
+    'تقييمك',
+  );
+
+  String finishingScore(String score) => _tp(
+    'Finition {score}/10',
+    'Finishing {score}/10',
+    'التشطيب {score}/10',
+    {'score': score},
+  );
+
+  String get deleteYourReviewQuestion => _t(
+    'Supprimer votre avis ?',
+    'Delete your review?',
+    'حذف تقييمك؟',
+  );
+
+  String get thisActionIsPermanent => _t(
+    'Cette action est définitive.',
+    'This action is permanent.',
+    'هذا الإجراء نهائي.',
+  );
+
+  String get loginRequired => _t(
+    'Connexion requise',
+    'Login required',
+    'تسجيل الدخول مطلوب',
+  );
+
+  String get pleaseLoginToProceed => _t(
+    'Veuillez vous connecter pour exécuter cette action.',
+    'Please sign in to perform this action.',
+    'يرجى تسجيل الدخول لتنفيذ هذا الإجراء.',
+  );
+
+  String get retry => _t(
+    'Réessayer',
+    'Retry',
+    'إعادة المحاولة',
+  );
+
+  String get requiredField => _t(
+    'Champ obligatoire',
+    'Required field',
+    'حقل مطلوب',
+  );
+
+  String get add => _t(
+    'Ajouter',
+    'Add',
+    'إضافة',
+  );
+
+  String get verified => _t(
+    'Vérifié',
+    'Verified',
+    'موثق',
+  );
+
+  String get rejected => _t(
+    'Refusé',
+    'Rejected',
+    'مرفوض',
+  );
+
+  String get pending => _t(
+    'En attente',
+    'Pending',
+    'قيد الانتظار',
+  );
+
+  String get proStatusPendingMessage => _t(
+    'Votre demande est en attente de validation.',
+    'Your request is pending validation.',
+    'طلبك قيد المراجعة.',
+  );
+
+  String get proStatusVerifiedMessage => _t(
+    'Votre profil professionnel est validé.',
+    'Your professional profile is verified.',
+    'تمت الموافقة على ملفك المهني.',
+  );
+
+  String get proStatusRejectedMessage => _t(
+    'Votre demande a été refusée. Vous pouvez corriger vos informations.',
+    'Your request was rejected. You can correct your information.',
+    'تم رفض طلبك. يمكنك تصحيح معلوماتك.',
+  );
+
+  String get myAds => _t(
+    'Mes annonces',
+    'My ads',
+    'إعلاناتي',
+  );
+  String get clientProfile => _t(
+    'Profile client',
+    'Client profile',
+    'ملف العميل',
+  );
 }

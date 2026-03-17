@@ -134,7 +134,7 @@ class RegisterManager {
   }
 
   Future<BaseResponse<StatusData>> submitRegister(RegisterRequest req) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;
@@ -173,7 +173,7 @@ class RegisterManager {
     required String otp,
     required String password,
   }) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;
@@ -210,7 +210,7 @@ class RegisterManager {
   }
 
   Future<BaseResponse<StatusData>> submitResendOtp(String email) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     inlineError.value = null;

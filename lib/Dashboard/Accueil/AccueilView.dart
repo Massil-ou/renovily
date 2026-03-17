@@ -197,6 +197,7 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   Widget _buildHero(double width) {
+    final s = widget.manager.renovilyTranslation;
     final heroHeight = _heroHeightForWidth(width);
 
     return SizedBox(
@@ -238,14 +239,14 @@ class _AccueilViewState extends State<AccueilView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const _GlassPill(
+                          _GlassPill(
                             icon: Icons.construction,
-                            text: 'BTP',
+                            text: s.btp,
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Trouver un professionnel du BTP',
-                            style: TextStyle(
+                          Text(
+                            s.findBtpProfessional,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 30,
                               fontWeight: FontWeight.w900,
@@ -256,6 +257,7 @@ class _AccueilViewState extends State<AccueilView> {
                             controller: _searchCtrl,
                             onSearch: _onSearch,
                             onFilters: _openFilters,
+                            searchHint: s.searchArtisanHint,
                           ),
                           const SizedBox(height: 14),
                           Wrap(
@@ -277,10 +279,11 @@ class _AccueilViewState extends State<AccueilView> {
   }
 
   List<Widget> _buildActiveFilterBadges() {
+    final s = widget.manager.renovilyTranslation;
     final widgets = <Widget>[];
 
     if (_searchCtrl.text.trim().isNotEmpty) {
-      widgets.add(_FilterBadge(text: 'Q: ${_searchCtrl.text.trim()}'));
+      widgets.add(_FilterBadge(text: '${s.searchLabel}: ${_searchCtrl.text.trim()}'));
     }
 
     widgets.addAll(_wilayas.map((e) => _FilterBadge(text: e)));
@@ -288,17 +291,17 @@ class _AccueilViewState extends State<AccueilView> {
     widgets.addAll(_metiers.map((e) => _FilterBadge(text: e)));
 
     if (_prixMin != null) {
-      widgets.add(_FilterBadge(text: 'Min $_prixMin DA'));
+      widgets.add(_FilterBadge(text: s.minPriceDa(_prixMin!)));
     }
 
     if (_prixMax != null) {
-      widgets.add(_FilterBadge(text: 'Max $_prixMax DA'));
+      widgets.add(_FilterBadge(text: s.maxPriceDa(_prixMax!)));
     }
 
     if (_isPro == true) {
-      widgets.add(const _FilterBadge(text: 'Pro'));
+      widgets.add(_FilterBadge(text: s.pro));
     } else if (_isPro == false) {
-      widgets.add(const _FilterBadge(text: 'Non pro'));
+      widgets.add(_FilterBadge(text: s.nonPro));
     }
 
     return widgets;
@@ -336,7 +339,7 @@ class _AccueilViewState extends State<AccueilView> {
                                   maxWidth: _maxContentWidth,
                                 ),
                                 child: Padding(
-                                  padding: padding,
+                                  padding: padding.copyWith(top: 8),
                                   child: isLoading
                                       ? const Padding(
                                     padding: EdgeInsets.symmetric(
@@ -347,43 +350,39 @@ class _AccueilViewState extends State<AccueilView> {
                                     ),
                                   )
                                       : items.isEmpty
-                                      ? const _EmptyState()
+                                      ? _EmptyState(
+                                    title: widget.manager.renovilyTranslation.noResults,
+                                    message: widget.manager.renovilyTranslation.tryBroadenSearch,
+                                  )
                                       : Column(
                                     children: [
                                       GridView.builder(
                                         shrinkWrap: true,
-                                        physics:
-                                        const NeverScrollableScrollPhysics(),
+                                        physics: const NeverScrollableScrollPhysics(),
                                         itemCount: items.length,
-                                        gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount:
-                                          crossAxisCount,
+                                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossAxisCount,
                                           mainAxisSpacing: 18,
                                           crossAxisSpacing: 18,
-                                          mainAxisExtent:
-                                          mainAxisExtent,
+                                          mainAxisExtent: mainAxisExtent,
                                         ),
                                         itemBuilder: (_, index) {
                                           final item = items[index];
                                           return OfferCardResp(
                                             item: item,
                                             shadow: false,
-                                            onTap: () =>
-                                                _openDetails(item),
+                                            onTap: () => _openDetails(item),
                                           );
                                         },
                                       ),
                                       if (isLoadingMore) ...[
                                         const SizedBox(height: 18),
                                         const Padding(
-                                          padding:
-                                          EdgeInsets.symmetric(
+                                          padding: EdgeInsets.symmetric(
                                             vertical: 8,
                                           ),
                                           child: Center(
-                                            child:
-                                            CircularProgressIndicator(),
+                                            child: CircularProgressIndicator(),
                                           ),
                                         ),
                                       ],
@@ -513,11 +512,13 @@ class _GlassSearchCard extends StatelessWidget {
   final TextEditingController controller;
   final Future<void> Function() onSearch;
   final VoidCallback onFilters;
+  final String searchHint;
 
   const _GlassSearchCard({
     required this.controller,
     required this.onSearch,
     required this.onFilters,
+    required this.searchHint,
   });
 
   @override
@@ -544,9 +545,9 @@ class _GlassSearchCard extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                   textInputAction: TextInputAction.search,
                   onSubmitted: (_) => onSearch(),
-                  decoration: const InputDecoration(
-                    hintText: 'Recherche plombier, maçon...',
-                    hintStyle: TextStyle(color: Colors.white70),
+                  decoration: InputDecoration(
+                    hintText: searchHint,
+                    hintStyle: const TextStyle(color: Colors.white70),
                     border: InputBorder.none,
                   ),
                 ),
@@ -680,7 +681,13 @@ class _FilterBadge extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final String title;
+  final String message;
+
+  const _EmptyState({
+    required this.title,
+    required this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -709,9 +716,9 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Aucun résultat',
-            style: TextStyle(
+          Text(
+            title,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900,
               color: Colors.black,
@@ -719,7 +726,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Essaie d’élargir la recherche ou de modifier les filtres.',
+            message,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,

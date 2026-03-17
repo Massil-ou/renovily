@@ -100,7 +100,7 @@ class AuthScaffold extends StatelessWidget {
                 child: ValueListenableBuilder<AppLanguage>(
                   valueListenable: manager.languageService.language,
                   builder: (_, __, ___) {
-                    WinyCar s = manager.winyCarTranslation;
+                    Renovily s = manager.renovilyTranslation;
                     return Row(
                       children: [
                         _GlassCircleIconButton(

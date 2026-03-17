@@ -17,15 +17,15 @@ import 'package:flutter/widgets.dart';
 final RouteObserver<PageRoute<dynamic>> routeObserver =
 RouteObserver<PageRoute<dynamic>>();
 
-class TomobilApp extends StatefulWidget {
-  const TomobilApp({super.key, required this.manager});
+class RenovilyApp extends StatefulWidget {
+  const RenovilyApp({super.key, required this.manager});
   final Manager manager;
 
   @override
-  State<TomobilApp> createState() => _TomobilAppState();
+  State<RenovilyApp> createState() => _TomobilAppState();
 }
 
-class _TomobilAppState extends State<TomobilApp> {
+class _TomobilAppState extends State<RenovilyApp> {
   late final GoRouter _router = GoRouter(
     debugLogDiagnostics: false,
     observers: [routeObserver],

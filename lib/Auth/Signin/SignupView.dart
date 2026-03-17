@@ -147,7 +147,7 @@ class _SignupViewState extends State<SignupView> {
   Future<void> _signupRegister() async {
     FocusScope.of(context).unfocus();
 
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     if (!(_infoKey.currentState?.validate() ?? false)) return;
 
@@ -299,7 +299,7 @@ class _SignupViewState extends State<SignupView> {
   }
 
   Widget _buildInfoCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Column(
       key: const ValueKey('signup_info_card'),
@@ -331,7 +331,7 @@ class _SignupViewState extends State<SignupView> {
   }
 
   Widget _buildOtpCard() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Column(
       key: const ValueKey('signup_otp_card'),
@@ -382,7 +382,7 @@ class _SignupViewState extends State<SignupView> {
   }
 
   Widget _buildInfoForm() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     final String? communeValue =
     (_commune != null && _communesFR.contains(_commune)) ? _commune : null;
@@ -652,7 +652,7 @@ class _SignupViewState extends State<SignupView> {
   }
 
   Widget _buildOtpForm() {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
 
     return Form(
       key: _otpKey,

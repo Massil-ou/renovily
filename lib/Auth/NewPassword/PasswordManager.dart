@@ -47,7 +47,7 @@ class PasswordManager {
   }
 
   String? validatePassword(String? value) {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
     return passwordValidator(
       manager,
       value,
@@ -57,7 +57,7 @@ class PasswordManager {
   }
 
   String? validateConfirmPassword(String? value, String passwordValue) {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
     final base = validatePassword(value);
     if (base != null) return base;
 
@@ -82,7 +82,7 @@ class PasswordManager {
   Future<BaseResponse<StatusData>> submit({
     required String newPassword,
   }) async {
-    final s = manager.winyCarTranslation;
+    final s = manager.renovilyTranslation;
 
     loading.value = true;
     success.value = false;

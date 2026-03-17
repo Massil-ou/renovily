@@ -102,7 +102,7 @@ class _NewPasswordViewState extends State<NewPasswordView> {
                 kToolbarHeight +
                 (isMobile ? 16 : 40);
 
-        final s = widget.manager.winyCarTranslation;
+        final s = widget.manager.renovilyTranslation;
 
         return AnimatedBuilder(
           animation: Listenable.merge([
@@ -170,7 +170,7 @@ class _NewPasswordViewState extends State<NewPasswordView> {
     );
   }
 
-  Widget _buildFormCard(WinyCar s) {
+  Widget _buildFormCard(Renovily s) {
     return Column(
       key: const ValueKey('new_pwd_form_card'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -277,7 +277,7 @@ class _NewPasswordViewState extends State<NewPasswordView> {
     );
   }
 
-  Widget _buildSuccessCard(WinyCar s) {
+  Widget _buildSuccessCard(Renovily s) {
     return Column(
       key: const ValueKey('new_pwd_success_card'),
       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -59,7 +59,7 @@ class _SupportViewState extends State<SupportView> {
     IconData icon = Icons.error_outline,
     Color iconColor = Colors.redAccent,
   }) async {
-    final s = widget.manager.winyCarTranslation;
+    final s = widget.manager.renovilyTranslation;
     if (!mounted) return;
 
     await showDialog<void>(
@@ -145,7 +145,7 @@ class _SupportViewState extends State<SupportView> {
     );
   }
 
-  Future<void> _launch(Uri uri, WinyCar s) async {
+  Future<void> _launch(Uri uri, Renovily s) async {
     try {
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!ok) {
@@ -170,7 +170,7 @@ class _SupportViewState extends State<SupportView> {
     }
   }
 
-  Future<void> _sendEmail(WinyCar s) async {
+  Future<void> _sendEmail(Renovily s) async {
     final subject = Uri.encodeComponent(s.supportMailSubject);
     final body = Uri.encodeComponent(
       "Bonjour,\n\n"
@@ -183,11 +183,11 @@ class _SupportViewState extends State<SupportView> {
     await _launch(uri, s);
   }
 
-  Future<void> _openSupportWebsite(WinyCar s) async {
+  Future<void> _openSupportWebsite(Renovily s) async {
     await _launch(Uri.parse(_supportUrl), s);
   }
 
-  Future<void> _submitForm(WinyCar s) async {
+  Future<void> _submitForm(Renovily s) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     _clearError();
@@ -239,7 +239,7 @@ class _SupportViewState extends State<SupportView> {
     );
   }
 
-  Widget _buildHeader(WinyCar s) {
+  Widget _buildHeader(Renovily s) {
     return _glassContainer(
       child: Row(
         children: [
@@ -263,7 +263,7 @@ class _SupportViewState extends State<SupportView> {
     );
   }
 
-  Widget _buildIntro(WinyCar s) {
+  Widget _buildIntro(Renovily s) {
     return _glassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -317,7 +317,7 @@ class _SupportViewState extends State<SupportView> {
     );
   }
 
-  Widget _buildForm(WinyCar s) {
+  Widget _buildForm(Renovily s) {
     return _glassContainer(
       child: Form(
         key: _formKey,
@@ -365,7 +365,7 @@ class _SupportViewState extends State<SupportView> {
     );
   }
 
-  Widget _buildActions(WinyCar s, {required bool isMobile}) {
+  Widget _buildActions(Renovily s, {required bool isMobile}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -561,7 +561,7 @@ class _SupportViewState extends State<SupportView> {
     return ValueListenableBuilder<AppLanguage>(
       valueListenable: widget.manager.languageService.language,
       builder: (_, __, ___) {
-        final s = widget.manager.winyCarTranslation;
+        final s = widget.manager.renovilyTranslation;
         final isMobile = widget.manager.globalSingleton.isMobile(context);
         final topGap =
             MediaQuery.of(context).padding.top + kToolbarHeight + (isMobile ? 16 : 24);

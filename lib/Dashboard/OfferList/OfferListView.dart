@@ -35,6 +35,8 @@ class _MesAnnoncesPageState extends State<OfferListView> {
 
     setState(() {});
 
+    final s = widget.manager.renovilyTranslation;
+
     if (m.lastError != null) {
       final err = m.lastError!;
       m.lastError = null;
@@ -42,7 +44,7 @@ class _MesAnnoncesPageState extends State<OfferListView> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showGlassDialog(
-          title: 'Erreur',
+          title: s.error,
           message: _mapErrorMessage(err),
           icon: Icons.error_outline,
           iconBg: const Color(0xFFFFE5E5),
@@ -59,17 +61,19 @@ class _MesAnnoncesPageState extends State<OfferListView> {
   }
 
   String _mapErrorMessage(String code) {
+    final s = widget.manager.renovilyTranslation;
+
     switch (code) {
       case 'load_failed':
-        return 'Impossible de charger vos annonces.';
+        return s.loadOffersFailed;
       case 'update_failed':
-        return 'Impossible de modifier cette annonce.';
+        return s.updateOfferFailed;
       case 'delete_failed':
-        return 'Impossible de supprimer cette annonce.';
+        return s.deleteOfferFailed;
       case 'invalid_payload':
-        return 'Réponse serveur invalide.';
+        return s.invalidServerResponse;
       case 'exception':
-        return 'Une erreur est survenue lors de la communication avec le serveur.';
+        return s.serverCommunicationError;
       default:
         return code;
     }
@@ -82,6 +86,8 @@ class _MesAnnoncesPageState extends State<OfferListView> {
     Color iconBg = const Color(0xFFEAF3FF),
     Color iconColor = Colors.blueAccent,
   }) async {
+    final s = widget.manager.renovilyTranslation;
+
     if (!mounted) return;
 
     await showDialog<void>(
@@ -91,7 +97,7 @@ class _MesAnnoncesPageState extends State<OfferListView> {
       builder: (_) => _GlassInfoDialog(
         title: title,
         message: message,
-        okText: 'OK',
+        okText: s.ok,
         icon: icon,
         iconBg: iconBg,
         iconColor: iconColor,
@@ -104,14 +110,18 @@ class _MesAnnoncesPageState extends State<OfferListView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => const _DeleteAnnonceDialog(),
+      builder: (_) => _DeleteAnnonceDialog(
+        manager: widget.manager,
+      ),
     );
 
     return result == true;
   }
 
   String _price(OfferModel a) {
-    if (a.prix == null || a.prix! <= 0) return 'Prix à négocier';
+    final s = widget.manager.renovilyTranslation;
+
+    if (a.prix == null || a.prix! <= 0) return s.priceNegotiable;
     final unit = a.unitePrix?.label ?? '';
     if (unit.isEmpty) return '${a.prix} DA';
     return '${a.prix} DA / $unit';
@@ -149,7 +159,10 @@ class _MesAnnoncesPageState extends State<OfferListView> {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => _EditAnnonceDialog(item: item),
+      builder: (_) => _EditAnnonceDialog(
+        manager: widget.manager,
+        item: item,
+      ),
     );
 
     if (updated == null || !mounted) return;
@@ -159,12 +172,14 @@ class _MesAnnoncesPageState extends State<OfferListView> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        const PageHeader(
-          title: 'Mes annonces',
-          subtitle: 'Gérer vos annonces publiées',
+        PageHeader(
+          title: s.myOffers,
+          subtitle: s.managePublishedOffers,
         ),
         if (m.isLoading)
           const Padding(
@@ -432,9 +447,13 @@ class _AnnonceImage extends StatelessWidget {
 }
 
 class _EditAnnonceDialog extends StatefulWidget {
+  final Manager manager;
   final OfferModel item;
 
-  const _EditAnnonceDialog({required this.item});
+  const _EditAnnonceDialog({
+    required this.manager,
+    required this.item,
+  });
 
   @override
   State<_EditAnnonceDialog> createState() => _EditAnnonceDialogState();
@@ -533,6 +552,8 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -569,10 +590,10 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Modifier l’annonce',
-                          style: TextStyle(
+                          s.editOffer,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             color: Colors.black,
@@ -584,25 +605,25 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _titreCtrl,
-                    decoration: _decoration('Titre'),
+                    decoration: _decoration(s.title),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _descriptionCtrl,
                     minLines: 3,
                     maxLines: 5,
-                    decoration: _decoration('Description'),
+                    decoration: _decoration(s.description),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _metierCtrl,
-                    decoration: _decoration('Métier'),
+                    decoration: _decoration(s.job),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
-                    decoration: _decoration('Téléphone'),
+                    decoration: _decoration(s.phone),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -610,14 +631,14 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                       Expanded(
                         child: TextField(
                           controller: _wilayaCtrl,
-                          decoration: _decoration('Wilaya'),
+                          decoration: _decoration(s.wilaya),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
                           controller: _communeCtrl,
-                          decoration: _decoration('Commune'),
+                          decoration: _decoration(s.commune),
                         ),
                       ),
                     ],
@@ -629,18 +650,18 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                         child: TextField(
                           controller: _prixCtrl,
                           keyboardType: TextInputType.number,
-                          decoration: _decoration('Prix'),
+                          decoration: _decoration(s.price),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: DropdownButtonFormField<OfferPriceUnit?>(
                           value: _selectedUnit,
-                          decoration: _decoration('Unité'),
+                          decoration: _decoration(s.unit),
                           items: [
-                            const DropdownMenuItem<OfferPriceUnit?>(
+                            DropdownMenuItem<OfferPriceUnit?>(
                               value: null,
-                              child: Text('Aucune unité'),
+                              child: Text(s.noUnit),
                             ),
                             ...OfferPriceUnit.values.map(
                                   (unit) => DropdownMenuItem<OfferPriceUnit?>(
@@ -673,7 +694,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Annuler'),
+                          child: Text(s.cancel),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -688,7 +709,7 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Enregistrer'),
+                          child: Text(s.save),
                         ),
                       ),
                     ],
@@ -704,10 +725,16 @@ class _EditAnnonceDialogState extends State<_EditAnnonceDialog> {
 }
 
 class _DeleteAnnonceDialog extends StatelessWidget {
-  const _DeleteAnnonceDialog();
+  final Manager manager;
+
+  const _DeleteAnnonceDialog({
+    required this.manager,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final s = manager.renovilyTranslation;
+
     return Center(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
@@ -744,10 +771,10 @@ class _DeleteAnnonceDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Supprimer l’annonce',
-                        style: TextStyle(
+                        s.deleteOffer,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
                           color: Colors.black,
@@ -757,9 +784,9 @@ class _DeleteAnnonceDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Voulez-vous vraiment supprimer cette annonce ?',
-                  style: TextStyle(
+                Text(
+                  s.confirmDeleteOffer,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black87,
                   ),
@@ -779,7 +806,7 @@ class _DeleteAnnonceDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Annuler'),
+                        child: Text(s.cancel),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -794,7 +821,7 @@ class _DeleteAnnonceDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Supprimer'),
+                        child: Text(s.delete),
                       ),
                     ),
                   ],
@@ -813,6 +840,8 @@ class _EmptyMesAnnoncesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = context.findAncestorStateOfType<_MesAnnoncesPageState>()?.widget.manager.renovilyTranslation;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
@@ -827,27 +856,27 @@ class _EmptyMesAnnoncesCard extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: const Column(
+          child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.campaign_outlined,
                 color: Colors.white,
                 size: 36,
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                'Aucune annonce',
-                style: TextStyle(
+                s?.noOffer ?? 'Aucune annonce',
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
-                'Vos annonces publiées apparaîtront ici.',
+                s?.publishedOffersAppearHere ?? 'Vos annonces publiées apparaîtront ici.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 13,
                 ),

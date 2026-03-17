@@ -35,7 +35,7 @@ class Manager {
   LanguageService? _languageService;
   LanguageService get languageService => _languageService ??= LanguageService();
 
-  WinyCar get winyCarTranslation => WinyCar(languageService.appLanguage);
+  Renovily get renovilyTranslation => Renovily(languageService.appLanguage);
 
   // ---------------- Global ----------------
 
